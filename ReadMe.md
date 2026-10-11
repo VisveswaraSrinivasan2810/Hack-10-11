@@ -1,7 +1,9 @@
 # CivicLens AI
 ### From Citizen Observation to Verified Resolution
 
-> **Status:** the complete .NET 8 backend (domain intelligence, API, seed data, demo scenarios, tests) is built and verified. The **Angular frontend is not built yet** (Node.js was not available on the build machine). See [PROGRESS.md](PROGRESS.md) for an honest requirement-by-requirement status.
+> **MVP browser UI added:** See [DEMO.md](DEMO.md) for the one-command local demo, role switching and jury walkthrough. The browser UI uses plain JavaScript served by the API. No Node.js install is needed.
+
+> **Earlier backend status:** the earlier backend work includes domain intelligence, API, seed data and demo scenarios. A plain JavaScript MVP browser interface is now available; a separate Angular implementation is still deferred. See [DEMO.md](DEMO.md) for current demo instructions. No tests were run or added for the MVP UI changes.
 
 ## Problem
 
@@ -100,7 +102,7 @@ Seeded city: 26 incidents (15 active, 10 resolved, 1 rejected), 3 critical, 3 re
 
 ## Screenshots
 
-*Not available — the Angular UI is deferred (see PROGRESS.md).* Use Swagger at `/swagger`.
+Open the local demo home page for the browser UI. Swagger remains available at `/swagger`. Screenshots have not been captured; interactive browser behavior remains untested.
 
 ## API Documentation
 

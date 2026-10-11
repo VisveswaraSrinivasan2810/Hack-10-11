@@ -8,3 +8,11 @@ src/CivicLens.Api/uploads/
 node_modules/
 dist/
 .angular/
+**/bin/
+**/obj/
+.vscode/
+.env.*
+!.env.example
+**/uploads/
+*.suo
+artifacts/

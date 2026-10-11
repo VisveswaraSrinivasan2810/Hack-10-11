@@ -16,6 +16,15 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Local demo needs no database server, cloud account or manually supplied key.
+if (builder.Configuration.GetValue<bool>("DEMO_MODE"))
+{
+    if (!builder.Environment.IsDevelopment())
+        throw new InvalidOperationException("DEMO_MODE is only allowed in Development.");
+    if (string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]))
+        builder.Configuration["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+}
+
 builder.Host.UseSerilog((ctx, cfg) => cfg
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
@@ -120,19 +129,21 @@ app.Use(async (ctx, next) =>
 
 var uploadsPath = Path.GetFullPath(builder.Configuration["Storage:Path"] ?? "uploads");
 Directory.CreateDirectory(uploadsPath);
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(uploadsPath), RequestPath = "/uploads" });
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseRouting();
 app.UseCors();
-app.UseRateLimiter();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
-app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
 
 // ---------------------------------------------------------------- database + demo data
 using (var scope = app.Services.CreateScope())
