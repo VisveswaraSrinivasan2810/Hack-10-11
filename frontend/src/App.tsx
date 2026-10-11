@@ -8,6 +8,7 @@ import {
   setSession,
 } from "./api";
 import { ago, fmtDate } from "./format";
+import { CONSTITUENCIES, constituencyOf, cr, fundingOf, inr } from "./accountability";
 import {
   CATEGORIES,
   checkPhoto,
@@ -247,6 +248,14 @@ export default function App() {
             <button
               onClick={() => {
                 setOpenId(null);
+                setView("budget");
+              }}
+            >
+              🏛 Constituencies &amp; budget
+            </button>
+            <button
+              onClick={() => {
+                setOpenId(null);
                 setView("notifications");
               }}
             >
@@ -347,6 +356,8 @@ export default function App() {
               />
             ) : view === "report" ? (
               <Report done={() => setView("feed")} />
+            ) : view === "budget" ? (
+              <Budget />
             ) : view === "notifications" ? (
               <Notifications />
             ) : view === "account" ? (
@@ -1111,6 +1122,90 @@ function Report({ done }: { done: () => void }) {
     </section>
   );
 }
+function Budget() {
+  const { open } = useApp();
+  const [items, setItems] = useState<Summary[] | null>(null),
+    [err, setErr] = useState(""),
+    [sel, setSel] = useState("");
+  useEffect(() => {
+    const c = new AbortController();
+    request<Page<Feed>>("/api/feed?page=1&pageSize=100", { signal: c.signal })
+      .then((p) => setItems(p.items.map((f) => f.summary)))
+      .catch((e) => { if (!c.signal.aborted) setErr(e.message); });
+    return () => c.abort();
+  }, []);
+  if (err) return <ErrorText message={err} />;
+  if (!items) return <p className="empty">Loading constituencies…</p>;
+  const rows = CONSTITUENCIES.map((c) => {
+    const inc = items.filter((i) => constituencyOf(i.zoneName ?? "").name === c.name),
+      act = inc.filter((i) => !["VerifiedResolved", "Rejected"].includes(i.status));
+    return { c, inc, act, need: act.reduce((a, i) => a + fundingOf(i).estCost, 0) };
+  }).sort((a, b) => b.act.length - a.act.length);
+  return (
+    <section className="enter">
+      <h1>Constituencies &amp; budget</h1>
+      <p className="warn">
+        Demo data: MLA names, contractors, budgets and repair costs are fictional placeholders and rough estimates — the
+        API doesn’t provide them yet. Replace with official records before any real use.
+      </p>
+      <ul className="cgrid">
+        {rows.map(({ c, inc, act, need }) => (
+          <li key={c.name} className="ccard">
+            <button className="cbtn" aria-expanded={sel === c.name} onClick={() => setSel(sel === c.name ? "" : c.name)}>
+              <b>{c.name}</b>
+              <small>MLA (demo): {c.mla}</small>
+              <div className="frow">
+                <span>Spent {cr(c.spentCr)} of {cr(c.budgetCr)}</span>
+                <b>{Math.round((c.spentCr / c.budgetCr) * 100)}%</b>
+              </div>
+              <div className="bar" aria-hidden><i style={{ width: `${(c.spentCr / c.budgetCr) * 100}%` }} /></div>
+              <small>{act.length} open of {inc.length} incidents · est. {inr(need)} outstanding · {cr(c.budgetCr - c.spentCr)} left</small>
+            </button>
+            {sel === c.name &&
+              (inc.length ? (
+                <ul className="list">
+                  {inc.map((i) => (
+                    <li key={i.id}>
+                      <button className="row" onClick={() => open(i.id)}>
+                        <span className="rowmain"><b>{i.categoryLabel}</b> <small>{i.code}</small><br />{i.locationLabel}</span>
+                        <span className="rowmeta"><Band i={i} /><small>{inr(fundingOf(i).estCost)} est.</small></span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="note">No incidents recorded here yet.</p>
+              ))}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Funding({ s }: { s: Summary }) {
+  const f = fundingOf(s),
+    when = (d: Date) => d.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+  return (
+    <div className="card">
+      <h2>Funding &amp; accountability <small>demo data</small></h2>
+      <p><b>{f.constituency.name}</b> · MLA (demo): {f.constituency.mla}</p>
+      <p>
+        Estimated repair: <b>{inr(f.estCost)}</b>{" "}
+        <small>from budget head “{f.head}” · {cr(f.constituency.budgetCr - f.constituency.spentCr)} unspent this year</small>
+      </p>
+      <p>Contractor of record: <b>{f.contractor}</b></p>
+      {f.warranty && (
+        <p className={f.warranty.active ? "warn" : "note"}>
+          {f.warranty.active
+            ? `Possibly within the defect-liability period (until ${when(f.warranty.until)}) — the contractor may be responsible for this repair at no extra cost. Check the work order.`
+            : `The defect-liability period may have ended in ${when(f.warranty.until)}.`}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Detail({ id, back }: { id: string; back: () => void }) {
   const { auth, version, busy, run, refresh, demo, open } = useApp();
   const [data, setData] = useState<DetailDto | null>(null),
@@ -1480,6 +1575,7 @@ function Detail({ id, back }: { id: string; back: () => void }) {
       </div>
       <h2>Discussion</h2>
       <Comments id={id} />
+      <Funding s={data.summary} />
       <h2>Timeline</h2>
       <ol className="timeline">
         {[...data.timeline].reverse().map((t, k) => (
