@@ -1,0 +1,1 @@
+- Visual direction update (owner request): Gen Z palette (lavender, electric violet, hot pink, lime accents) replaces saffron/teal; demo city is Hyderabad. Citizen home is a social-style feed with votes, comments, and authorised-fixer counts; keep contrast and non-colour status cues.
