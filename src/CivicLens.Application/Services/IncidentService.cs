@@ -35,7 +35,7 @@ public sealed class IncidentService(
             ? new PriorityBreakdownDto(0, 0, 0, 0, 0, 0, incident.PriorityScore, CpsCalculator.BandLabel(incident.PriorityBand), [], null, incident.UpdatedAt)
             : new PriorityBreakdownDto(latest.Severity, latest.CitizenEvidence, latest.LocationRisk, latest.IncidentAge, latest.Exposure,
                 latest.Recurrence, latest.FinalScore, CpsCalculator.BandLabel(latest.Band), reasons,
-                breakdowns.Count > 1 ? breakdowns[1].FinalScore : null, latest.CalculatedAt);
+                breakdowns.Count > 1 ? breakdowns[1].FinalScore : null, latest.CalculatedAt, latest.ContextAmplifier);
 
         var ctx = await context.AssessAsync(incident.Category, incident.Latitude, incident.Longitude, ct);
 
@@ -294,6 +294,7 @@ public sealed class IncidentService(
         if (to == IncidentStatus.Reopened)
         {
             await notify.NotifyRoleAsync(UserRole.Authority, "incident_reopened", "Incident reopened", $"{incident.PublicIncidentCode} was reopened.", id, ct);
+            foreach (var old in await db.Assignments.Where(x => x.IncidentId == id && x.IsActive).ToListAsync(ct)) old.IsActive = false;
             incident.AssignedWorkerId = null;
         }
         await db.SaveChangesAsync(ct);

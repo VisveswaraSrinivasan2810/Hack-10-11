@@ -116,6 +116,7 @@ public class PriorityScoreBreakdown
     public double IncidentAge { get; set; }
     public double Exposure { get; set; }
     public double Recurrence { get; set; }
+    public double ContextAmplifier { get; set; }
     public double FinalScore { get; set; }
     public PriorityBand Band { get; set; }
     /// <summary>JSON array of human-readable reasons ("Why Critical?").</summary>

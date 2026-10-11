@@ -44,7 +44,7 @@ public sealed record IncidentSummaryDto(
 
 public sealed record PriorityBreakdownDto(
     double Severity, double CitizenEvidence, double LocationRisk, double IncidentAge, double Exposure, double Recurrence,
-    double FinalScore, string Band, IReadOnlyList<string> Reasons, double? PreviousScore, DateTime CalculatedAt);
+    double FinalScore, string Band, IReadOnlyList<string> Reasons, double? PreviousScore, DateTime CalculatedAt, double ContextAmplifier = 0);
 
 public sealed record ObservationPublicDto(
     Guid Id, string ImageUrl, DateTime CreatedAt, string Category, int ConfidencePercent, int SameIncidentPercent,

@@ -35,6 +35,7 @@ public static class DemoCity
     public const double SchoolRoadLat = 12.97185, SchoolRoadLon = 77.5940;
     // Scenario spots (kept away from seeded incidents so that live demos create fresh incidents).
     public const double QuietRoadLat = 12.9660, QuietRoadLon = 77.5860;       // quiet street, Zone A
+    public const double DuplicateLat = 12.9665, DuplicateLon = 77.5890;      // scenario 2 (kept apart from scenario 1)
     public const double LakeviewSchoolLat = 12.97055, LakeviewSchoolLon = 77.5830; // ~60 m from Lakeview Primary
     public const double GarbageLat = 12.9775, GarbageLon = 77.6070;           // Zone C
     public const double WaterLat = 12.9670, WaterLon = 77.6080;               // Zone C
@@ -48,7 +49,7 @@ public static class DemoImages
 {
     public static byte[] Bytes(string hint)
     {
-        var rnd = Guid.NewGuid().ToByteArray().Concat(Guid.NewGuid().ToByteArray()).Concat(Guid.NewGuid().ToByteArray()).ToArray();
+        var rnd = System.Security.Cryptography.RandomNumberGenerator.GetBytes(4096);
         return [0xFF, 0xD8, 0xFF, 0xE0, .. System.Text.Encoding.ASCII.GetBytes(hint), .. rnd, 0xFF, 0xD9];
     }
 

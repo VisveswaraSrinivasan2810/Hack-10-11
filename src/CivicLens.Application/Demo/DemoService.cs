@@ -63,8 +63,8 @@ public sealed class DemoService(
     // ---------------------------------------------------------------- scenarios
     private async Task<DemoScenarioResult> DuplicateAsync(DemoScenarioDto s, CancellationToken ct)
     {
-        var first = await ReportAsync(ct, "pothole", DemoCity.QuietRoadLat, DemoCity.QuietRoadLon, "Pothole on a quiet street");
-        var second = await ReportAsync(ct, "pothole", DemoCity.QuietRoadLat + 0.0001, DemoCity.QuietRoadLon, "Same pothole, another citizen");
+        var first = await ReportAsync(ct, "pothole", DemoCity.DuplicateLat, DemoCity.DuplicateLon, "Pothole on a quiet street");
+        var second = await ReportAsync(ct, "pothole", DemoCity.DuplicateLat + 0.0001, DemoCity.DuplicateLon, "Same pothole, another citizen");
         var hl = new List<string>
         {
             $"First observation → {first.Code} (CPS {first.PriorityAfter:0})",

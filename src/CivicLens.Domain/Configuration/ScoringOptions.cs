@@ -10,6 +10,12 @@ public class ScoringOptions
     public double WeightIncidentAge { get; set; } = 0.10;
     public double WeightExposure { get; set; } = 0.15;
     public double WeightRecurrence { get; set; } = 0.15;
+    /// <summary>
+    /// Context amplifier: weighted sum is multiplied by (1 + max * clamp((LocationRisk-50)/50, 0..1)).
+    /// Needed because with age = 0 and recurrence = 0 the plain weighted formula tops out at 75, so a brand-new incident next to a school
+    /// could never be CRITICAL. Set to 0 to use the plain specification formula.
+    /// </summary>
+    public double ContextAmplifierMax { get; set; } = 0.75;
 
     // Same-incident fingerprint
     public double MatchRadiusMeters { get; set; } = 50;

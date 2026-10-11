@@ -1,0 +1,69 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\brokenstreetlight.svg",
+      "PackagePath": "staticwebassets\\demo\\brokenstreetlight.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\damagedfootpath.svg",
+      "PackagePath": "staticwebassets\\demo\\damagedfootpath.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\damagedpublicinfrastructure.svg",
+      "PackagePath": "staticwebassets\\demo\\damagedpublicinfrastructure.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\fallentree.svg",
+      "PackagePath": "staticwebassets\\demo\\fallentree.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\fixed.svg",
+      "PackagePath": "staticwebassets\\demo\\fixed.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\garbageaccumulation.svg",
+      "PackagePath": "staticwebassets\\demo\\garbageaccumulation.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\illegaldumping.svg",
+      "PackagePath": "staticwebassets\\demo\\illegaldumping.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\other.svg",
+      "PackagePath": "staticwebassets\\demo\\other.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\pothole.svg",
+      "PackagePath": "staticwebassets\\demo\\pothole.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\roaddamage.svg",
+      "PackagePath": "staticwebassets\\demo\\roaddamage.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\sewageoverflow.svg",
+      "PackagePath": "staticwebassets\\demo\\sewageoverflow.svg"
+    },
+    {
+      "Id": "C:\\Hack\\src\\CivicLens.Api\\wwwroot\\demo\\waterleakage.svg",
+      "PackagePath": "staticwebassets\\demo\\waterleakage.svg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.CivicLens.Api.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.CivicLens.Api.props",
+      "PackagePath": "build\\CivicLens.Api.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.CivicLens.Api.props",
+      "PackagePath": "buildMultiTargeting\\CivicLens.Api.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.CivicLens.Api.props",
+      "PackagePath": "buildTransitive\\CivicLens.Api.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

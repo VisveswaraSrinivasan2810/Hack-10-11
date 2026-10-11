@@ -14,7 +14,7 @@ public sealed record CpsInput(
 
 public sealed record CpsResult(
     double Severity, double CitizenEvidence, double LocationRisk, double IncidentAge, double Exposure, double Recurrence,
-    double FinalScore, PriorityBand Band, IReadOnlyList<string> Reasons);
+    double FinalScore, PriorityBand Band, IReadOnlyList<string> Reasons, double ContextAmplifier = 0);
 
 /// <summary>Civic Priority Score — transparent 0..100 composite with human-readable reasons.</summary>
 public static class CpsCalculator
@@ -54,7 +54,8 @@ public static class CpsCalculator
 
         var final = severity * o.WeightSeverity + evidence * o.WeightCitizenEvidence + risk * o.WeightLocationRisk
                     + age * o.WeightIncidentAge + exposure * o.WeightExposure + recurrence * o.WeightRecurrence;
-        final = Math.Round(Math.Clamp(final, 0, 100), 1);
+        var amplifier = Math.Round(o.ContextAmplifierMax * Math.Clamp((risk - 50) / 50, 0, 1), 3);
+        final = Math.Round(Math.Clamp(final * (1 + amplifier), 0, 100), 1);
         var band = BandFor(final);
 
         var reasons = new List<string>();
@@ -63,10 +64,11 @@ public static class CpsCalculator
         if (i.EffectiveObservations >= 1.5) reasons.Add($"{Math.Round(i.EffectiveObservations)} independent citizen observations/confirmations");
         if (i.ContextReasons is { Count: > 0 }) reasons.AddRange(i.ContextReasons);
         else if (risk < 50) reasons.Add("Located in a low-risk area");
+        if (amplifier > 0.05) reasons.Add($"Context amplifier ×{1 + amplifier:0.00}: sensitive surroundings make the same hazard more urgent");
         if (exposure >= 60) reasons.Add($"High public exposure ({exposure:0})");
         if (age >= 40) reasons.Add($"Unresolved for {i.AgeDays:0} days");
         if (i.RecurrencePriorCount >= 1) reasons.Add($"Recurring issue: {i.RecurrencePriorCount} earlier related incident(s) at this location");
 
-        return new CpsResult(severity, evidence, risk, age, exposure, recurrence, final, band, reasons);
+        return new CpsResult(severity, evidence, risk, age, exposure, recurrence, final, band, reasons, amplifier);
     }
 }

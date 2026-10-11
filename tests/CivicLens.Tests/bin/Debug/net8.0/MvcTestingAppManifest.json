@@ -1,0 +1,6 @@
+{
+  "CivicLens.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Hack\\src\\CivicLens.Api",
+  "CivicLens.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Hack\\src\\CivicLens.Application",
+  "CivicLens.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Hack\\src\\CivicLens.Domain",
+  "CivicLens.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Hack\\src\\CivicLens.Infrastructure"
+}

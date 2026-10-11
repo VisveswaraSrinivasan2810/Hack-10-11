@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "5d9e7EScNNg=",
+  "dgSpecHash": "WIMG+vfB0eA=",
   "success": true,
   "projectFilePath": "C:\\Hack\\src\\CivicLens.Api\\CivicLens.Api.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Vishwa\\.nuget\\packages\\anthropic\\12.55.0\\anthropic.12.55.0.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\fluentvalidation\\11.11.0\\fluentvalidation.11.11.0.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.11.0\\fluentvalidation.dependencyinjectionextensions.11.11.0.nupkg.sha512",
@@ -11,7 +12,9 @@
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.11\\microsoft.entityframeworkcore.8.0.11.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.11\\microsoft.entityframeworkcore.abstractions.8.0.11.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.11\\microsoft.entityframeworkcore.analyzers.8.0.11.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.entityframeworkcore.inmemory\\8.0.11\\microsoft.entityframeworkcore.inmemory.8.0.11.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\8.0.11\\microsoft.entityframeworkcore.relational.8.0.11.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.extensions.ai.abstractions\\10.5.1\\microsoft.extensions.ai.abstractions.10.5.1.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.1\\microsoft.extensions.caching.memory.8.0.1.nupkg.sha512",
@@ -56,7 +59,11 @@
     "C:\\Users\\Vishwa\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.6.2\\swashbuckle.aspnetcore.swaggerui.6.6.2.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\system.diagnostics.diagnosticsource\\8.0.0\\system.diagnostics.diagnosticsource.8.0.0.nupkg.sha512",
     "C:\\Users\\Vishwa\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.2.1\\system.identitymodel.tokens.jwt.8.2.1.nupkg.sha512",
-    "C:\\Users\\Vishwa\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512"
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.io.pipelines\\10.0.6\\system.io.pipelines.10.0.6.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.net.serversentevents\\10.0.1\\system.net.serversentevents.10.0.1.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.text.encodings.web\\10.0.6\\system.text.encodings.web.10.0.6.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.text.json\\10.0.6\\system.text.json.10.0.6.nupkg.sha512"
   ],
   "logs": []
 }

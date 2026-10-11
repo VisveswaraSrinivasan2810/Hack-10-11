@@ -146,7 +146,7 @@ public sealed class DemoSeeder(
             // --- Critical incidents near sensitive places
             new(IssueCategory.SewageOverflow, 12.97455, 77.59670, "City General Hospital approach", 3, IncidentStatus.Assigned, 5, Severity: 90, Worker: true, Path: ["Assigned"]),
             new(IssueCategory.Pothole, 12.97075, 77.59400, "Demo School Road (south)", 5, IncidentStatus.Reported, 4, Severity: 84),
-            new(IssueCategory.RoadDamage, 12.96935, 77.60420, "Old Town Market Road", 5, IncidentStatus.Validated, 4, Severity: 88, Path: ["Validated"]),
+            new(IssueCategory.RoadDamage, 12.96925, 77.60405, "Old Town Market Road", 5, IncidentStatus.Validated, 4, Severity: 88, Path: ["Validated"]),
 
             // --- Disputed resolutions ("ghost closures")
             new(IssueCategory.GarbageAccumulation, 12.97720, 77.60500, "Old Town Lane 9", 15, IncidentStatus.RequiresReview, 3, Confirmations: 2, ResolveHours: 40, Path: DisputedPath),

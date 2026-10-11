@@ -210,8 +210,9 @@ public sealed class PriorityScoringService(
                                 select new { u.Id, u.TrustScore }).AsNoTracking().ToListAsync(ct);
 
         var distinctObservers = observers.GroupBy(x => x.Id).ToList();
+        var extraPhotos = observers.Count - distinctObservers.Count;
         double effective = distinctObservers.Sum(g => TrustScoreCalculator.EvidenceWeight(g.First().TrustScore))
-                           + 0.25 * observers.Count(x => true) - 0.25 * distinctObservers.Count
+                           + 0.25 * extraPhotos
                            + confirmers.Where(c => distinctObservers.All(g => g.Key != c.Id))
                                        .Sum(c => 0.6 * TrustScoreCalculator.EvidenceWeight(c.TrustScore));
         // Seeded/legacy incidents may have counts but no linked users: fall back to the stored counters.
@@ -233,7 +234,7 @@ public sealed class PriorityScoringService(
         db.PriorityBreakdowns.Add(new PriorityScoreBreakdown
         {
             IncidentId = incident.Id, Severity = cps.Severity, CitizenEvidence = cps.CitizenEvidence, LocationRisk = cps.LocationRisk,
-            IncidentAge = cps.IncidentAge, Exposure = cps.Exposure, Recurrence = cps.Recurrence, FinalScore = cps.FinalScore,
+            IncidentAge = cps.IncidentAge, Exposure = cps.Exposure, Recurrence = cps.Recurrence, ContextAmplifier = cps.ContextAmplifier, FinalScore = cps.FinalScore,
             Band = cps.Band, ReasonsJson = JsonSerializer.Serialize(cps.Reasons), CalculatedAt = now
         });
 
