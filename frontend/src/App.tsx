@@ -46,6 +46,7 @@ export default function App() {
         : <Worker list={incidents} open={setOpenId} />}
     </main>
     <footer>Scores and AI labels are estimates, not decisions. Public views show observation counts only — never reporter identities. {probe.detail && <em>{probe.detail}</em>}
+      <a className="link" href="/operations.html">Open backend-connected workspace →</a>
       <button className="link" onClick={() => demoStore.reset()}>Reset demo data</button></footer>
   </>
 }

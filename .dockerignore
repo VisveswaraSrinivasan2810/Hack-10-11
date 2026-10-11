@@ -9,3 +9,6 @@ tests
 .vscode
 Datasets
 master_prompt.txt
+
+**/node_modules
+**/dist

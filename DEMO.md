@@ -123,3 +123,16 @@ service live; adding this file to GitHub does not launch a server by itself.
 
 The Docker build publishes only the API and its dependencies; no test runner or
 test project is included. No tests or hosted smoke checks were run in this change.
+
+## New feed UI from `frontend-feed-ui`
+
+The hosted home page is now the React/Vite Hyderabad social feed (local simulated
+records, votes, comments and role previews). The actual API-connected workspace
+is retained at **`/operations.html`**, linked from the feed footer. Use that
+workspace for the backend scenario presentation and real request/response flows.
+These two demo stores are independent; the feed does not claim live API mutations.
+
+The Render image builds the React frontend using `npm ci` and `npm run build`,
+then embeds its output alongside the API. Local `dotnet run` still serves the
+original API-connected home page. Run `npm ci` and `npm run dev` inside `frontend`
+to preview the new feed separately. The Docker build uses Node 24.
