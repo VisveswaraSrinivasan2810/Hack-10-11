@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+.env
+uploads/
+src/CivicLens.Api/uploads/
+node_modules/
+dist/
+.angular/

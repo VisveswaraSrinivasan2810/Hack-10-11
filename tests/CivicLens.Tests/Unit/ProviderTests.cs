@@ -11,7 +11,7 @@ public class DemoProviderTests
 {
     private readonly DemoClassificationService _cls = new();
     private readonly DemoResolutionVerificationService _ver = new();
-    private readonly DemoImageSimilarityService _sim = new();
+    private readonly ImageSimilarityService _sim = new();
 
     [Fact]
     public async Task Filename_hint_gives_high_confidence_and_is_deterministic()
@@ -64,6 +64,7 @@ public class DemoProviderTests
 
 public class ClaudeFallbackTests
 {
+    private static readonly Microsoft.Extensions.Configuration.IConfiguration Demo = Microsoft.Extensions.Configuration.MemoryConfigurationBuilderExtensions.AddInMemoryCollection(new Microsoft.Extensions.Configuration.ConfigurationBuilder(), new Dictionary<string, string?> { ["DEMO_MODE"] = "true" }).Build();
     [Fact]
     public async Task Real_provider_failure_falls_back_to_demo_provider()
     {
@@ -73,12 +74,12 @@ public class ClaudeFallbackTests
         try
         {
             var claude = new ClaudeVisionClient(opts);
-            var svc = new FallbackClassificationService(new ClaudeClassificationService(claude), new DemoClassificationService(), NullLogger<FallbackClassificationService>.Instance);
+            var svc = new FallbackClassificationService(new ClaudeClassificationService(claude), new DemoClassificationService(), Demo, NullLogger<FallbackClassificationService>.Instance);
             var r = await svc.ClassifyAsync(new ImageUpload(DemoImages.Bytes("x"), "pothole.jpg", "image/jpeg"), null);
             Assert.Equal("demo", r.Provider);
             Assert.Equal(IssueCategory.Pothole, r.Category);
 
-            var ver = new FallbackVerificationService(new ClaudeVerificationService(claude), new DemoResolutionVerificationService(), NullLogger<FallbackVerificationService>.Instance);
+            var ver = new FallbackVerificationService(new ClaudeVerificationService(claude), new DemoResolutionVerificationService(), Demo, NullLogger<FallbackVerificationService>.Instance);
             var v = await ver.VerifyAsync(IssueCategory.Pothole, new ImageUpload(DemoImages.Bytes("x"), "after_fixed.jpg", "image/jpeg"), null);
             Assert.Equal("demo", v.Provider);
         }

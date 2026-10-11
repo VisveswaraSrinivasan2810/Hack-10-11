@@ -11,6 +11,7 @@ public class User
     public string PasswordHash { get; set; } = "";
     public UserRole Role { get; set; }
     public int TrustScore { get; set; } = TrustScoreCalculator.BaseScore;
+    public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 

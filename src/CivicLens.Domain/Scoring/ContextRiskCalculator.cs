@@ -23,6 +23,8 @@ public static class ContextRiskCalculator
         _ => (100, 50, "public place")
     };
 
+    public static double DefaultWeight(PoiType t) => t switch { PoiType.School => 100, PoiType.Hospital => 100, PoiType.Market => 85, PoiType.Junction => 80, _ => 70 };
+
     public static double MaxSearchRadius => Enum.GetValues<PoiType>().Max(t => Profile(t).Radius);
 
     public static ContextRiskResult Calculate(IssueCategory category, IEnumerable<PoiHit> pois)

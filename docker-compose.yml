@@ -1,0 +1,46 @@
+# CivicLens AI — local stack: PostgreSQL + PostGIS and the API.
+# Usage:  copy .env.example to .env, then  docker compose up --build
+# Only the database:  docker compose up db   (then run the API with `dotnet run --project src/CivicLens.Api`)
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: civiclens
+      POSTGRES_USER: civiclens
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-civiclens_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civiclens -d civiclens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: src/CivicLens.Api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=db;Port=5432;Database=civiclens;Username=civiclens;Password=${POSTGRES_PASSWORD:-civiclens_dev}
+      Jwt__Key: ${JWT_KEY:?set JWT_KEY in .env (32+ characters)}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      AI__Provider: ${AI_PROVIDER:-Demo}
+      AI__Model: ${AI_MODEL:-claude-opus-5-5}
+      AI__ApiKey: ${ANTHROPIC_API_KEY:-}
+      Storage__Path: /data/uploads
+      Cors__Origins__0: ${CORS_ORIGIN:-http://localhost:4200}
+    ports:
+      - "5241:8080"
+    volumes:
+      - uploads:/data/uploads
+
+volumes:
+  pgdata:
+  uploads:

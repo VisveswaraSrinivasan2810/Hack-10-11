@@ -18,21 +18,26 @@ public sealed class DashboardService(
 
     public async Task<DashboardSummaryDto> SummaryAsync(CancellationToken ct = default)
     {
-        var all = await db.Incidents.AsNoTracking().Where(i => i.Status != IncidentStatus.Rejected).ToListAsync(ct);
         var now = lifecycle.Now;
-        var active = all.Where(i => i.IsActive).ToList();
-        var resolved = all.Where(i => i.Status == IncidentStatus.VerifiedResolved && i.ResolvedAt != null).ToList();
-        var avgHours = resolved.Count == 0 ? 0 : resolved.Average(i => (i.ResolvedAt!.Value - i.FirstObservedAt).TotalHours);
+        // Scales with open work, not with history: active incidents + a rolling 180-day window of resolutions, totals via COUNT.
+        var active = await db.Incidents.AsNoTracking()
+            .Where(i => i.Status != IncidentStatus.Rejected && i.Status != IncidentStatus.VerifiedResolved).ToListAsync(ct);
+        var since = now.AddDays(-180);
+        var resolved = await db.Incidents.AsNoTracking()
+            .Where(i => i.Status == IncidentStatus.VerifiedResolved && i.ResolvedAt != null && i.ResolvedAt >= since)
+            .Select(i => new { ResolvedAt = i.ResolvedAt!.Value, i.FirstObservedAt }).ToListAsync(ct);
+        var totalIncidents = await db.Incidents.CountAsync(i => i.Status != IncidentStatus.Rejected, ct);
+        var avgHours = resolved.Count == 0 ? 0 : resolved.Average(i => (i.ResolvedAt - i.FirstObservedAt).TotalHours);
         var health = await CityHealthAsync(ct);
         var observations = await db.Observations.CountAsync(ct);
         var hotspots = HotspotDetector.Detect(ToPoints(active), now, _o);
 
         return new DashboardSummaryDto(
             active.Count, active.Count(i => i.PriorityBand == PriorityBand.Critical), active.Count(i => i.PriorityScore >= 50),
-            resolved.Count(i => i.ResolvedAt!.Value.Date == now.Date), active.Count(i => i.RecurrencePriorCount >= _o.RecurringMinPriorIncidents),
+            resolved.Count(i => i.ResolvedAt.Date == now.Date), active.Count(i => i.RecurrencePriorCount >= _o.RecurringMinPriorIncidents),
             active.Count(i => i.ResolutionStatus == ResolutionStatus.Disputed), active.Count(i => i.ResolutionStatus == ResolutionStatus.AwaitingVerification),
             hotspots.Count(h => h.IsEmerging), Math.Round(avgHours, 1), health, HealthScoreCalculator.Label(HealthScoreCalculator.BandFor(health)),
-            observations, all.Count, all.Count == 0 ? 0 : Math.Round(observations / (double)all.Count, 2));
+            observations, totalIncidents, totalIncidents == 0 ? 0 : Math.Round(observations / (double)totalIncidents, 2));
     }
 
     public async Task<IReadOnlyList<HotspotDto>> HotspotsAsync(CancellationToken ct = default)
@@ -119,7 +124,9 @@ public sealed class DashboardService(
     public async Task<ZoneHealthDto> ZoneHealthAsync(Guid zoneId, CancellationToken ct = default)
     {
         var zone = await db.Zones.FirstOrDefaultAsync(z => z.Id == zoneId, ct) ?? throw new NotFoundException("Zone not found.");
-        var items = await db.Incidents.AsNoTracking().Where(i => i.ZoneId == zoneId && i.Status != IncidentStatus.Rejected).ToListAsync(ct);
+        var since = lifecycle.Now.AddDays(-90);
+        var items = await db.Incidents.AsNoTracking()
+            .Where(i => i.ZoneId == zoneId && i.Status != IncidentStatus.Rejected && (i.Status != IncidentStatus.VerifiedResolved || i.ResolvedAt >= since)).ToListAsync(ct);
         var stats = StatsFor(items);
         var h = HealthScoreCalculator.Calculate(stats);
         if (Math.Abs(zone.CivicHealthScore - h.Score) > 0.01) { zone.CivicHealthScore = h.Score; await db.SaveChangesAsync(ct); }
@@ -151,8 +158,10 @@ public sealed class DashboardService(
     // ---------------------------------------------------------------- analytics
     public async Task<AnalyticsDto> AnalyticsAsync(CancellationToken ct = default)
     {
-        var all = await db.Incidents.AsNoTracking().Where(i => i.Status != IncidentStatus.Rejected).ToListAsync(ct);
         var now = lifecycle.Now;
+        var yearAgo = now.AddDays(-365);
+        var all = await db.Incidents.AsNoTracking()
+            .Where(i => i.Status != IncidentStatus.Rejected && (i.FirstObservedAt >= yearAgo || (i.Status != IncidentStatus.VerifiedResolved))).ToListAsync(ct);
 
         var byCategory = all.GroupBy(i => i.Category).OrderByDescending(g => g.Count())
             .Select(g => new ChartPoint(CategoryRules.Label(g.Key), g.Count())).ToList();

@@ -206,7 +206,6 @@ C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.FileSystem.Primiti
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.FileSystem.Watcher.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.IsolatedStorage.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.MemoryMappedFiles.dll
-C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.Pipelines.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.Pipes.AccessControl.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.Pipes.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.IO.UnmanagedMemoryStream.dll
@@ -285,8 +284,6 @@ C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.ServiceProcess.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.Encoding.CodePages.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.Encoding.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.Encoding.Extensions.dll
-C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.Encodings.Web.dll
-C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.Json.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Text.RegularExpressions.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Threading.Channels.dll
 C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\refs\System.Threading.dll
@@ -473,3 +470,11 @@ C:\Hack\tests\CivicLens.Tests\obj\Debug\net8.0\refint\CivicLens.Tests.dll
 C:\Hack\tests\CivicLens.Tests\obj\Debug\net8.0\CivicLens.Tests.pdb
 C:\Hack\tests\CivicLens.Tests\obj\Debug\net8.0\CivicLens.Tests.genruntimeconfig.cache
 C:\Hack\tests\CivicLens.Tests\obj\Debug\net8.0\ref\CivicLens.Tests.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\CivicLens.Api.staticwebassets.runtime.json
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\Anthropic.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\Microsoft.Extensions.AI.Abstractions.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\System.IO.Pipelines.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\System.Net.ServerSentEvents.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\System.Text.Encodings.Web.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\System.Text.Json.dll
+C:\Hack\tests\CivicLens.Tests\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll

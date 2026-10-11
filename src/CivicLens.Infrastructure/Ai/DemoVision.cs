@@ -119,39 +119,6 @@ public sealed class DemoClassificationService : IIssueClassificationService
     }
 }
 
-public sealed class DemoImageSimilarityService : IImageSimilarityService
-{
-    private const int Buckets = 64;
-
-    /// <summary>64-bucket byte histogram, hex encoded. Cheap, deterministic, replaceable by real embeddings.</summary>
-    public string ComputeSignature(byte[] imageBytes)
-    {
-        var counts = new double[Buckets];
-        foreach (var b in imageBytes) counts[b * Buckets / 256]++;
-        var max = Math.Max(1, counts.Max());
-        return string.Concat(counts.Select(c => ((int)Math.Round(c / max * 255)).ToString("x2")));
-    }
-
-    public Task<double> CompareAsync(string signatureA, string hashA, string signatureB, string hashB, CancellationToken ct = default)
-    {
-        if (!string.IsNullOrEmpty(hashA) && hashA == hashB) return Task.FromResult(1.0);
-        var a = Parse(signatureA); var b = Parse(signatureB);
-        if (a is null || b is null) return Task.FromResult(0.5);
-        double dot = 0, na = 0, nb = 0;
-        for (var i = 0; i < Buckets; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
-        var cos = na == 0 || nb == 0 ? 0 : dot / Math.Sqrt(na * nb);
-        return Task.FromResult(Math.Round(0.15 + 0.80 * Math.Clamp((cos - 0.80) / 0.20, 0, 1), 3));
-    }
-
-    private static int[]? Parse(string s)
-    {
-        if (s.Length != Buckets * 2) return null;
-        var r = new int[Buckets];
-        for (var i = 0; i < Buckets; i++) r[i] = Convert.ToInt32(s.Substring(i * 2, 2), 16);
-        return r;
-    }
-}
-
 public sealed class DemoResolutionVerificationService : IResolutionVerificationService
 {
     public Task<ResolutionCheckResult> VerifyAsync(IssueCategory beforeCategory, ImageUpload afterImage, string? workerNotes, CancellationToken ct = default)

@@ -100,6 +100,15 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
         {
             await Envelope.WriteAsync(ctx, ex.StatusCode, Envelope.Fail(ctx, "bad_request", "The request could not be read. Check the upload size and format."));
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException { SqlState: "23505" })
+        {
+            // Unique-constraint race (double tap, two devices): the first request won; tell the second one plainly.
+            await Envelope.WriteAsync(ctx, 409, Envelope.Fail(ctx, "conflict", "That was already recorded. Please refresh and try again."));
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+        {
+            await Envelope.WriteAsync(ctx, 409, Envelope.Fail(ctx, "conflict", "Someone else changed this at the same time. Please refresh and try again."));
+        }
         catch (OperationCanceledException) when (ctx.RequestAborted.IsCancellationRequested) { /* client went away */ }
         catch (Exception ex)
         {

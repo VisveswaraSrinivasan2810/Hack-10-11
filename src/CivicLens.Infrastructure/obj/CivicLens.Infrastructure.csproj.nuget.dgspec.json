@@ -229,6 +229,10 @@
               "target": "Package",
               "version": "[8.0.11, )"
             },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
             "Microsoft.IdentityModel.Tokens": {
               "target": "Package",
               "version": "[8.2.1, )"
@@ -240,6 +244,14 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": {
               "target": "Package",
               "version": "[8.0.11, )"
+            },
+            "SkiaSharp": {
+              "target": "Package",
+              "version": "[4.153.1, )"
+            },
+            "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+              "target": "Package",
+              "version": "[4.153.1, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",

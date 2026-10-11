@@ -192,7 +192,7 @@ public sealed class IncidentService(
 
     public async Task<IReadOnlyList<WorkerDto>> WorkersAsync(CancellationToken ct = default)
     {
-        var workers = await db.Users.AsNoTracking().Where(u => u.Role == UserRole.FieldWorker).OrderBy(u => u.Name).ToListAsync(ct);
+        var workers = await db.Users.AsNoTracking().Where(u => u.Role == UserRole.FieldWorker && u.IsActive).OrderBy(u => u.Name).ToListAsync(ct);
         var counts = await db.Incidents.AsNoTracking()
             .Where(i => i.AssignedWorkerId != null && i.Status != IncidentStatus.VerifiedResolved && i.Status != IncidentStatus.Rejected)
             .GroupBy(i => i.AssignedWorkerId).Select(g => new { g.Key, N = g.Count() }).ToListAsync(ct);
@@ -228,7 +228,7 @@ public sealed class IncidentService(
         if (user.Role != UserRole.Authority || user.Id is null) throw new ForbiddenException("Only authorities can assign incidents.");
         var incident = await db.Incidents.FirstOrDefaultAsync(i => i.Id == id, ct) ?? throw new NotFoundException("Incident not found.");
         var worker = await db.Users.FirstOrDefaultAsync(u => u.Id == req.WorkerId, ct);
-        if (worker is null || worker.Role != UserRole.FieldWorker) throw new BadRequestException("The selected field worker is not available.");
+        if (worker is null || worker.Role != UserRole.FieldWorker || !worker.IsActive) throw new BadRequestException("The selected field worker is not available.");
         if (incident.Status is IncidentStatus.VerifiedResolved or IncidentStatus.Rejected or IncidentStatus.AwaitingVerification
             or IncidentStatus.WorkCompleted or IncidentStatus.VerificationFailed)
             throw new InvalidTransitionException($"An incident that is {incident.Status} cannot be assigned.");

@@ -26,6 +26,8 @@ public static class DependencyInjection
         s.AddScoped<IncidentService>();
         s.AddScoped<ResolutionService>();
         s.AddScoped<DashboardService>();
+        s.AddScoped<PoiCoverageService>();
+        s.AddScoped<AdminService>();
         s.AddScoped<AuthService>();
         s.AddScoped<UserService>();
         s.AddScoped<Abstractions.INotificationService, InAppNotificationService>();

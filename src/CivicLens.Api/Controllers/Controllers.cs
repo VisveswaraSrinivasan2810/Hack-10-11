@@ -58,7 +58,7 @@ public sealed class ObservationsController(ObservationService observations, ICur
     /// <summary>SEE → SNAP: upload a photo + location; returns AI classification, context and ranked duplicate matches.</summary>
     [HttpPost("analyze")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(12 * 1024 * 1024)]
+    [RequestSizeLimit(20 * 1024 * 1024)]
     [EnableRateLimiting("upload")]
     public async Task<AnalysisResponse> Analyze([FromForm] AnalyzeForm form, CancellationToken ct)
     {
@@ -118,7 +118,7 @@ public sealed class IncidentsController(IncidentService incidents, ResolutionSer
     [HttpPost("{id:guid}/resolution")]
     [Authorize(Roles = nameof(UserRole.FieldWorker))]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(12 * 1024 * 1024)]
+    [RequestSizeLimit(20 * 1024 * 1024)]
     [EnableRateLimiting("upload")]
     public async Task<ResolutionDto> SubmitResolution(Guid id, [FromForm] ResolutionForm form, CancellationToken ct) =>
         await resolution.SubmitAsync(id, user, await ReadImageAsync(form.AfterImage, "afterImage"), form.Notes, form.CompletedAt, ct);
@@ -228,4 +228,36 @@ public sealed class DemoController(DemoService demo, IConfiguration config) : Ap
     public async Task<object> Reset(CancellationToken ct) { EnsureEnabled(); await demo.ResetAsync(ct); return new { reset = true }; }
 
     private void EnsureEnabled() { if (!Enabled) throw new NotFoundException("Demo mode is not enabled."); }
+}
+
+// ====================================================================== Admin (authority)
+[Route("api/admin")]
+[Authorize(Roles = nameof(UserRole.Authority))]
+public sealed class AdminController(AdminService admin, ICurrentUser user) : ApiControllerBase
+{
+    [HttpPost("pois")] public async Task<PoiDto> CreatePoi(PoiCreateRequest request, CancellationToken ct) => await admin.CreatePoiAsync(request, ct);
+    [HttpDelete("pois/{id:guid}")] public async Task<object> DeletePoi(Guid id, CancellationToken ct) { await admin.DeletePoiAsync(id, ct); return new { deleted = true }; }
+
+    /// <summary>Import schools, hospitals, markets, bus stops and junctions around a point from OpenStreetMap.</summary>
+    [HttpPost("pois/import")] public async Task<object> ImportPois(PoiImportRequest request, CancellationToken ct) => await admin.ImportPoisAsync(request, ct);
+
+    [HttpPost("zones")] public async Task<ZoneDto> CreateZone(ZoneCreateRequest request, CancellationToken ct) => await admin.CreateZoneAsync(request, ct);
+    [HttpDelete("zones/{id:guid}")] public async Task<object> DeleteZone(Guid id, CancellationToken ct) { await admin.DeleteZoneAsync(id, ct); return new { deleted = true }; }
+
+    [HttpGet("staff")] public async Task<IReadOnlyList<AdminUserDto>> Staff(CancellationToken ct) => await admin.ListStaffAsync(ct);
+    [HttpPost("users")] public async Task<AdminUserDto> CreateUser(AdminUserRequest request, CancellationToken ct) => await admin.CreateUserAsync(request, ct);
+    [HttpPost("users/{id:guid}/active")]
+    public async Task<AdminUserDto> SetActive(Guid id, SetActiveRequest request, CancellationToken ct) => await admin.SetActiveAsync(id, request.Active, user, ct);
+}
+
+[Route("api/account")]
+[Authorize]
+public sealed class AccountController(UserService users, IPasswordHasher hasher, ICurrentUser user) : ApiControllerBase
+{
+    [HttpPost("password")]
+    public async Task<object> ChangePassword(ChangePasswordRequest request, CancellationToken ct)
+    {
+        await users.ChangePasswordAsync(UserId(user), request.CurrentPassword, request.NewPassword, hasher, ct);
+        return new { changed = true };
+    }
 }

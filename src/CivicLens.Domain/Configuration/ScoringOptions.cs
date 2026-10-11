@@ -49,7 +49,11 @@ public class ScoringOptions
     public double MaxDeviceDistanceMeters { get; set; } = 2000;
     public double ServiceAreaCenterLat { get; set; } = 12.9716;
     public double ServiceAreaCenterLon { get; set; } = 77.5946;
-    public double ServiceAreaRadiusKm { get; set; } = 25;
+    /// <summary>0 = no service-area restriction (default). Set centre + radius to restrict reports to one city.</summary>
+    public double ServiceAreaRadiusKm { get; set; } = 0;
+    /// <summary>Import schools/hospitals/etc. from OpenStreetMap the first time a report arrives in an area with no known places.</summary>
+    public bool PoiAutoImport { get; set; } = true;
+    public double PoiCoverageRadiusMeters { get; set; } = 3000;
 
     // Hotspots
     public double HotspotRadiusMeters { get; set; } = 150;

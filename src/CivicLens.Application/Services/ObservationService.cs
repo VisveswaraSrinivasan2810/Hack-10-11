@@ -20,7 +20,7 @@ public sealed class ObservationService(
     IAppDbContext db, IIssueClassificationService classifier, IImageSimilarityService similarity, IImageStorage storage,
     IContextRiskService context, IIncidentMatchingService matching, RecurrenceService recurrence, CorrelationService correlation,
     IPriorityScoringService priority, IncidentLifecycle lifecycle, INotificationService notify, TrustService trust,
-    IOptions<ScoringOptions> options)
+    IImageProcessor imageProcessor, IGeocoder geocoder, PoiCoverageService poiCoverage, IOptions<ScoringOptions> options)
 {
     private readonly ScoringOptions _o = options.Value;
     private static readonly TimeSpan DraftLifetime = TimeSpan.FromHours(2);
@@ -32,8 +32,10 @@ public sealed class ObservationService(
         ValidateLocation(req.Latitude, req.Longitude, req.DeviceLatitude, req.DeviceLongitude);
         if (req.Description is { Length: > 500 }) throw new BadRequestException("The description must be 500 characters or fewer.");
 
-        var ext = ImageTools.ValidateAndGetExtension(req.Image.Bytes);
-        var clean = ImageTools.StripMetadata(req.Image.Bytes);
+        ImageTools.ValidateAndGetExtension(req.Image.Bytes); // fast reject of non-images before any decoding
+        var processed = imageProcessor.Process(req.Image.Bytes);
+        var ext = processed.Extension;
+        var clean = processed.Bytes;
         var hash = ImageTools.Sha256Hex(clean);
 
         var drafts = await db.ObservationDrafts.CountAsync(d => d.UserId == userId && d.CreatedAt >= now.AddHours(-1), ct);
@@ -48,7 +50,7 @@ public sealed class ObservationService(
         if (reusedByOthers) warnings.Add("This photo matches one submitted earlier by another citizen. It will be flagged for review.");
 
         ClassificationResult cls;
-        try { cls = await classifier.ClassifyAsync(new ImageUpload(clean, req.Image.FileName, req.Image.ContentType), req.Description, ct); }
+        try { cls = await classifier.ClassifyAsync(new ImageUpload(processed.AiBytes, req.Image.FileName, processed.AiContentType), req.Description, ct); }
         catch (Exception)
         {
             // AI unavailable: never block the citizen — ask them to choose the category manually.
@@ -66,7 +68,8 @@ public sealed class ObservationService(
         if (lowConfidence) warnings.Add("We're not fully sure what this is. Please select the correct category.");
 
         var url = await storage.SaveAsync(clean, ext, ct);
-        var signature = similarity.ComputeSignature(clean);
+        var signature = similarity.ComputeSignature(processed.AiBytes);
+        await poiCoverage.EnsureAsync(req.Latitude, req.Longitude, ct); // makes contextual risk work anywhere, not just the demo city
         var label = await ResolveLocationLabelAsync(req.Latitude, req.Longitude, req.LocationLabel, ct);
 
         var draft = new ObservationDraft
@@ -126,6 +129,7 @@ public sealed class ObservationService(
 
         var observation = new Observation
         {
+            Id = draft.Id, // same id as the draft: a concurrent double-submit hits the primary key instead of creating two observations
             UserId = userId, ImageUrl = draft.ImageUrl, ImageHash = draft.ImageHash, ImageSignature = draft.ImageSignature,
             Latitude = draft.Latitude, Longitude = draft.Longitude, Location = GeoMath.ToPoint(draft.Latitude, draft.Longitude),
             Description = (req.Description ?? draft.Description)?.Trim(), DetectedCategory = draft.DetectedCategory, AiConfidence = draft.AiConfidence,
@@ -245,12 +249,11 @@ public sealed class ObservationService(
         var point = observation.Location;
         var incident = new CivicIncident
         {
-            PublicIncidentCode = await NextCodeAsync(ct), Category = category, Latitude = draft.Latitude, Longitude = draft.Longitude,
+            PublicIncidentCode = "", Category = category, Latitude = draft.Latitude, Longitude = draft.Longitude,
             Location = point, LocationLabel = draft.LocationLabel, PrimaryImageUrl = observation.ImageUrl, SeverityScore = observation.SeverityScore,
             Status = IncidentStatus.Reported, FirstObservedAt = now, LastObservedAt = now, ObservationCount = 1,
             ZoneId = zones.FirstOrDefault(z => z.Boundary.Contains(point))?.Id, CreatedAt = now, UpdatedAt = now
         };
-        db.Incidents.Add(incident);
         db.IncidentObservations.Add(new IncidentObservation
         { IncidentId = incident.Id, ObservationId = observation.Id, SameIncidentScore = 1, MergeReason = "NewIncident", CreatedAt = now });
 
@@ -261,14 +264,23 @@ public sealed class ObservationService(
         if (category != draft.DetectedCategory)
             lifecycle.AddEvent(incident.Id, "CitizenCategoryOverride",
                 $"Citizen changed category from {CategoryRules.Label(draft.DetectedCategory)} to {CategoryRules.Label(category)}", observation.UserId);
+
+        // Public codes are sequential. Two concurrent creations can pick the same number; the unique index rejects one, which retries with the next.
+        for (var attempt = 0; ; attempt++)
+        {
+            incident.PublicIncidentCode = await NextCodeAsync(attempt, ct);
+            db.Incidents.Add(incident);
+            try { await db.SaveChangesAsync(ct); break; }
+            catch (DbUpdateException) when (attempt < 4) { db.Entry(incident).State = EntityState.Detached; }
+        }
         lifecycle.AddEvent(incident.Id, "IncidentCreated", $"Incident {incident.PublicIncidentCode} created", null, null, null, IncidentStatus.Reported);
         await db.SaveChangesAsync(ct);
         return incident;
     }
 
-    private async Task<string> NextCodeAsync(CancellationToken ct)
+    private async Task<string> NextCodeAsync(int attempt, CancellationToken ct)
     {
-        var n = 1001 + await db.Incidents.CountAsync(ct);
+        var n = 1001 + await db.Incidents.CountAsync(ct) + attempt;
         while (await db.Incidents.AnyAsync(i => i.PublicIncidentCode == $"CL-{n}", ct)) n++;
         return $"CL-{n}";
     }
@@ -297,8 +309,8 @@ public sealed class ObservationService(
     {
         if (!GeoMath.IsValidCoordinate(lat, lon))
             throw new BadRequestException("The location is invalid. Please allow location access or drop a pin on the map.", "invalid_location");
-        var fromCentre = GeoMath.DistanceMeters(lat, lon, _o.ServiceAreaCenterLat, _o.ServiceAreaCenterLon) / 1000;
-        if (fromCentre > _o.ServiceAreaRadiusKm)
+        var fromCentre = _o.ServiceAreaRadiusKm <= 0 ? 0 : GeoMath.DistanceMeters(lat, lon, _o.ServiceAreaCenterLat, _o.ServiceAreaCenterLon) / 1000;
+        if (_o.ServiceAreaRadiusKm > 0 && fromCentre > _o.ServiceAreaRadiusKm)
             throw new BadRequestException("This location is outside the CivicLens service area.", "outside_service_area");
         if (devLat is not null && devLon is not null && GeoMath.IsValidCoordinate(devLat.Value, devLon.Value)
             && GeoMath.DistanceMeters(lat, lon, devLat.Value, devLon.Value) > _o.MaxDeviceDistanceMeters)
@@ -308,8 +320,11 @@ public sealed class ObservationService(
     private async Task<string?> ResolveLocationLabelAsync(double lat, double lon, string? supplied, CancellationToken ct)
     {
         if (!string.IsNullOrWhiteSpace(supplied)) return supplied.Trim()[..Math.Min(120, supplied.Trim().Length)];
+        var street = await geocoder.ReverseAsync(lat, lon, ct); // null when disabled/offline
         var ctx = await context.AssessAsync(IssueCategory.Other, lat, lon, ct);
         var nearest = ctx.NearbyPois.OrderBy(p => p.DistanceMeters).FirstOrDefault();
+        if (street is not null)
+            return nearest is not null && nearest.DistanceMeters <= 120 ? $"{street} · near {nearest.Name}" : street;
         if (nearest is not null) return $"Near {nearest.Name}";
         var zones = await db.Zones.AsNoTracking().ToListAsync(ct);
         var z = zones.FirstOrDefault(z => z.Boundary.Contains(GeoMath.ToPoint(lat, lon)));

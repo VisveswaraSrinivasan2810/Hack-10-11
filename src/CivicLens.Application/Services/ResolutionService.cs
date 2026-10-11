@@ -15,7 +15,7 @@ namespace CivicLens.Application.Services;
 public sealed class ResolutionService(
     IAppDbContext db, IncidentLifecycle lifecycle, IResolutionVerificationService verifier, IImageStorage storage,
     INotificationService notify, TrustService trust, IPriorityScoringService priority,
-    IOptions<ScoringOptions> options, ILogger<ResolutionService> logger)
+    IImageProcessor imageProcessor, IOptions<ScoringOptions> options, ILogger<ResolutionService> logger)
 {
     private readonly ScoringOptions _o = options.Value;
     private const double VoterRadiusMeters = 300;
@@ -39,8 +39,10 @@ public sealed class ResolutionService(
         if (completedAt is not null && completedAt.Value.ToUniversalTime() > now.AddMinutes(5))
             throw new BadRequestException("The completion time cannot be in the future.");
 
-        var ext = ImageTools.ValidateAndGetExtension(after.Bytes);
-        var clean = ImageTools.StripMetadata(after.Bytes);
+        ImageTools.ValidateAndGetExtension(after.Bytes);
+        var processed = imageProcessor.Process(after.Bytes);
+        var ext = processed.Extension;
+        var clean = processed.Bytes;
         var hash = ImageTools.Sha256Hex(clean);
 
         // Fraud guard: the same photo as the "before" evidence (or a previous after-photo) proves nothing.
@@ -67,7 +69,7 @@ public sealed class ResolutionService(
 
         // AI before/after check. Failure of the AI provider must never break the workflow.
         ResolutionCheckResult check;
-        try { check = await verifier.VerifyAsync(incident.Category, new ImageUpload(clean, after.FileName, after.ContentType), notes, ct); }
+        try { check = await verifier.VerifyAsync(incident.Category, new ImageUpload(processed.AiBytes, after.FileName, processed.AiContentType), notes, ct); }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Resolution verification provider failed for incident {Incident}", incident.PublicIncidentCode);

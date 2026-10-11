@@ -67,4 +67,17 @@ public sealed class LocalImageStorage(IOptions<StorageOptions> options) : IImage
         await File.WriteAllBytesAsync(Path.Combine(_root, name), bytes, ct);
         return $"/uploads/{name}"; // public URL only — the filesystem path is never exposed
     }
+
+    public Task DeleteAsync(string url, CancellationToken ct = default)
+    {
+        // Only ever delete files we created: /uploads/<32 hex chars>.<ext>. Anything else is ignored (no path traversal).
+        if (System.Text.RegularExpressions.Regex.IsMatch(url ?? "", @"^/uploads/[0-9a-f]{32}\.(jpg|png|webp)$"))
+        {
+            var path = Path.Combine(_root, url![len("/uploads/")..]);
+            try { if (File.Exists(path)) File.Delete(path); } catch (IOException) { /* best effort */ }
+        }
+        return Task.CompletedTask;
+
+        static int len(string s) => s.Length;
+    }
 }

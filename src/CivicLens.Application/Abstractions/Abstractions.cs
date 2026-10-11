@@ -22,6 +22,7 @@ public interface IAppDbContext
     DbSet<PotentialCorrelation> Correlations { get; }
     DbSet<Zone> Zones { get; }
     DbSet<Notification> Notifications { get; }
+    Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -65,6 +66,7 @@ public interface IImageStorage
 {
     /// <summary>Persists bytes and returns a public, non-filesystem URL such as /uploads/abc.jpg.</summary>
     Task<string> SaveAsync(byte[] bytes, string extension, CancellationToken ct = default);
+    Task DeleteAsync(string url, CancellationToken ct = default);
 }
 
 public interface INotificationService
@@ -88,4 +90,27 @@ public interface ICurrentUser
 {
     Guid? Id { get; }
     UserRole? Role { get; }
+}
+
+/// <summary>Decoded, orientation-corrected, metadata-free image ready for storage, plus a downscaled copy for AI vision.</summary>
+public sealed record ProcessedImage(byte[] Bytes, string Extension, byte[] AiBytes, string AiContentType);
+
+/// <summary>Normalises phone photos: validates they really decode, fixes EXIF rotation, strips ALL metadata (incl. GPS), caps resolution.</summary>
+public interface IImageProcessor
+{
+    ProcessedImage Process(byte[] original);
+}
+
+/// <summary>Reverse geocoding (coordinates to a human-readable place such as "MG Road, Indiranagar"). Optional; may return null.</summary>
+public interface IGeocoder
+{
+    Task<string?> ReverseAsync(double latitude, double longitude, CancellationToken ct = default);
+}
+
+public sealed record ImportedPoi(string Name, PoiType Type, double Latitude, double Longitude);
+
+/// <summary>Finds schools, hospitals, bus stops, junctions and markets around a point (e.g. OpenStreetMap) so contextual risk works anywhere.</summary>
+public interface IPoiImporter
+{
+    Task<IReadOnlyList<ImportedPoi>> FindAroundAsync(double latitude, double longitude, double radiusMeters, CancellationToken ct = default);
 }

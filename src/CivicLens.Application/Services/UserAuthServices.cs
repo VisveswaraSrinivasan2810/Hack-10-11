@@ -16,8 +16,7 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(80).WithMessage("Please enter your name (up to 80 characters).");
         RuleFor(x => x.Email).NotEmpty().MaximumLength(160).Must(BeEmail).WithMessage("Please enter a valid email address.");
-        RuleFor(x => x.Password).NotEmpty().MinimumLength(8).MaximumLength(100)
-            .WithMessage("Password must be between 8 and 100 characters.");
+        RuleFor(x => x.Password).Must(PasswordRules.IsStrong).WithMessage(PasswordRules.Message);
     }
     private static bool BeEmail(string e) => MailAddress.TryCreate(e, out var a) && a.Address == e;
 }
@@ -33,6 +32,10 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 
 public sealed class AuthService(IAppDbContext db, IPasswordHasher hasher, ITokenService tokens, TimeProvider clock)
 {
+    private const int MaxFailures = 5;
+    private static readonly TimeSpan LockWindow = TimeSpan.FromMinutes(15);
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Count, DateTime First)> Failures = new();
+
     public async Task<AuthResponse> RegisterAsync(RegisterRequest req, CancellationToken ct = default)
     {
         var email = req.Email.Trim().ToLowerInvariant();
@@ -52,9 +55,18 @@ public sealed class AuthService(IAppDbContext db, IPasswordHasher hasher, IToken
     public async Task<AuthResponse> LoginAsync(LoginRequest req, CancellationToken ct = default)
     {
         var email = req.Email.Trim().ToLowerInvariant();
+        var now = clock.GetUtcNow().UtcDateTime;
+        if (Failures.TryGetValue(email, out var f) && now - f.First < LockWindow && f.Count >= MaxFailures)
+            throw new RateLimitException("Too many failed sign-in attempts. Please wait 15 minutes and try again.");
+
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
         if (user is null || !hasher.Verify(req.Password, user.PasswordHash))
+        {
+            Failures.AddOrUpdate(email, (1, now), (_, old) => now - old.First >= LockWindow ? (1, now) : (old.Count + 1, old.First));
             throw new UnauthorizedAppException("Incorrect email or password.");
+        }
+        if (!user.IsActive) throw new ForbiddenException("This account has been deactivated. Please contact your administrator.");
+        Failures.TryRemove(email, out _);
         return Issue(user);
     }
 
@@ -107,6 +119,14 @@ public sealed class UserService(IAppDbContext db, TrustService trust)
             r.Inputs.ResolutionChecks, r.Inputs.InvalidSubmissions, total, r.Factors, level);
     }
 
+
+    public async Task ChangePasswordAsync(Guid userId, string current, string next, IPasswordHasher hasher, CancellationToken ct = default)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new NotFoundException("User not found.");
+        if (!hasher.Verify(current, user.PasswordHash)) throw new BadRequestException("Your current password is incorrect.", "wrong_password");
+        user.PasswordHash = hasher.Hash(next);
+        await db.SaveChangesAsync(ct);
+    }
     public async Task<IReadOnlyList<NotificationDto>> NotificationsAsync(Guid userId, CancellationToken ct = default) =>
         await db.Notifications.AsNoTracking().Where(n => n.UserId == userId).OrderByDescending(n => n.CreatedAt).Take(50)
             .Select(n => new NotificationDto(n.Id, n.EventType, n.Title, n.Message, n.IsRead, n.CreatedAt, n.IncidentId)).ToListAsync(ct);
