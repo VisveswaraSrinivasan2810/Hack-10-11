@@ -1,0 +1,11 @@
+.git
+**/bin
+**/obj
+**/uploads
+tests
+.env
+.env.*
+.vs
+.vscode
+Datasets
+master_prompt.txt

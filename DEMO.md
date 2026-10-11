@@ -93,3 +93,33 @@ database is recreated automatically with Hyderabad data. If you explicitly use a
 persistent database, existing records are not replaced automatically; use
 **Authority → Demo studio → Reset demo city** only on a disposable demo database.
 Reset deletes the demo data and reseeds it. Demo AI remains simulated.
+
+## Free hosted demo on Render
+
+The existing .NET API needs a long-running server. Netlify/Vercel static hosting
+alone cannot run this backend. `render.yaml` defines a free Docker web service
+that serves both the UI and API from the same origin.
+
+1. Sign in to Render and choose **New → Blueprint**.
+2. Connect `VisveswaraSrinivasan2810/Hack-10-11`, branch `main`.
+3. Render reads `render.yaml`. Confirm that the service plan is **Free** before
+   launching. No database or paid disk is defined.
+4. Apply the blueprint and wait for its image build and startup to finish.
+5. Open the service's HTTPS URL from the Render dashboard. The home page is the
+   demo UI; `/swagger` is available for API exploration.
+
+A generated JWT key is configured by Render; no AI credential is needed. Seeded
+demo logins are still public demo accounts, but the API enforces role-based login
+instead of the optional no-login bypass. This service is deliberately configured
+as Development for its disposable demo fixtures; it is not a production release.
+Do not enter personal information or sensitive photographs.
+
+The free service can sleep when idle, so open it before presenting to allow time
+for a cold start. Incidents and uploads are ephemeral: restart, redeployment or
+instance replacement can discard them and recreate the Hyderabad seed. There is
+no persistent database or storage. Availability and free-tier account eligibility
+are controlled by Render. Deployment is not complete until Render reports the
+service live; adding this file to GitHub does not launch a server by itself.
+
+The Docker build publishes only the API and its dependencies; no test runner or
+test project is included. No tests or hosted smoke checks were run in this change.

@@ -1,0 +1,33 @@
+# Disposable hackathon demo: no paid database or persistent disk.
+services:
+  - type: web
+    name: civiclens-hyderabad-demo
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./src/CivicLens.Api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Development
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "8080"
+      - key: DEMO_MODE
+        value: "true"
+      - key: Database__Provider
+        value: InMemory
+      - key: AI__Provider
+        value: Demo
+      - key: Auth__Disabled
+        value: "false"
+      - key: Jwt__Key
+        generateValue: true
+      - key: Storage__Path
+        value: /app/uploads
+      - key: Geocoding__Enabled
+        value: "false"
+      - key: Poi__Enabled
+        value: "false"
+      - key: CivicLens__Scoring__PoiAutoImport
+        value: "false"

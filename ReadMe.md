@@ -142,3 +142,9 @@ Municipal API integration · IoT sensors · CCTV detection where legal · weathe
 **ONE REAL-WORLD PROBLEM ≠ MANY COMPLAINTS. DON'T JUST CLOSE TICKETS. VERIFY OUTCOMES.**
 
 > Existing systems measure complaints and closures. CivicLens measures real-world incidents and verified resolutions.
+
+## Free hosted MVP
+
+Use the Render Blueprint in [`render.yaml`](render.yaml) to run the UI and .NET
+API together on a disposable free-tier service. See [the deployment steps](DEMO.md#free-hosted-demo-on-render).
+No PostgreSQL or AI key is needed; accounts, incidents and uploads are demo-only.
