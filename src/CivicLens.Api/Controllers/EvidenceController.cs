@@ -13,9 +13,11 @@ public sealed class EvidenceController(AppDbContext db, ICurrentUser user, IConf
     [HttpGet("/uploads/{name}")]
     public async Task<IActionResult> Get(string name, CancellationToken ct)
     {
-        if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-f0-9]{32}\\.(jpg|png|webp)$")) return NotFound();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-f0-9]{32}\.(jpg|png|webp)$")) return NotFound();
         var url = "/uploads/" + name;
         var own = await db.Observations.AnyAsync(o => o.ImageUrl == url && o.UserId == user.Id, ct);
+        // Analysis creates a draft; the observation exists only after submission.
+        var ownDraft = await db.ObservationDrafts.AnyAsync(d => d.ImageUrl == url && d.UserId == user.Id, ct);
         var linked = await (from io in db.IncidentObservations
                             join o in db.Observations on io.ObservationId equals o.Id
                             join i in db.Incidents on io.IncidentId equals i.Id
@@ -24,7 +26,7 @@ public sealed class EvidenceController(AppDbContext db, ICurrentUser user, IConf
         var resolution = await (from e in db.ResolutionEvidence join i in db.Incidents on e.IncidentId equals i.Id
                                 where e.AfterImageUrl == url && (user.Role != UserRole.FieldWorker || i.AssignedWorkerId == user.Id)
                                 select e.Id).AnyAsync(ct);
-        if (!own && !linked && !resolution) return NotFound();
+        if (!own && !ownDraft && !linked && !resolution) return NotFound();
         var path = Path.Combine(Path.GetFullPath(config["Storage:Path"] ?? "uploads"), name);
         if (!System.IO.File.Exists(path)) return NotFound();
         var mime = name.EndsWith(".png") ? "image/png" : name.EndsWith(".webp") ? "image/webp" : "image/jpeg";
