@@ -30,7 +30,7 @@ Then open port 5242 instead. Swagger remains available at `/swagger`.
 
 ## Your 3-minute presentation
 
-1. The app opens as **Authority** with a seeded Bengaluru demo city.
+1. The app opens as **Authority** with a seeded Hyderabad demo city.
 2. Open **Demo studio** and run scenario **2 — Duplicate pothole observation**.
    Open the resulting incident: two observations are merged into one incident.
 3. Run **3 — Critical pothole near school**. Show the contextual priority reasons.
@@ -78,3 +78,18 @@ Demo accounts: `authority@civiclens.demo`, `citizen@civiclens.demo`, and
 No tests or test cases are run or added, per request. API compilation is reported
 separately; it does not establish that every interactive workflow works. Browser
 behavior and end-to-end scenarios remain untested.
+
+## Hyderabad seed
+
+The demo now uses Hyderabad coordinates around **17.3850, 78.4867**, with
+fictional Lakdikapul, Abids and Koti demo zones, schools, hospital, market, bus stop
+and junction. These are illustrative seed fixtures, not surveyed real facilities
+or official municipal boundaries. The default report is at **17.38525, 78.4861**,
+about 72 m north of the seeded Abids Demo Public School. All recurring histories,
+scenario locations, hotspot bounds and map markers use the same city coordinates.
+
+After pulling this update, stop and restart the **Demo** process. Its in-memory
+database is recreated automatically with Hyderabad data. If you explicitly use a
+persistent database, existing records are not replaced automatically; use
+**Authority → Demo studio → Reset demo city** only on a disposable demo database.
+Reset deletes the demo data and reseeds it. Demo AI remains simulated.

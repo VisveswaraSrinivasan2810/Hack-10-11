@@ -209,6 +209,16 @@ public sealed class DemoController(DemoService demo, IConfiguration config) : Ap
         : new
         {
             demoMode = true,
+            city = new
+            {
+                name = DemoCity.Name,
+                centerLatitude = DemoCity.CenterLat, centerLongitude = DemoCity.CenterLon,
+                reportLatitude = DemoCity.SchoolRoadLat, reportLongitude = DemoCity.SchoolRoadLon,
+                reportLocationLabel = "Abids Demo School Road, Hyderabad",
+                mapBounds = new { minLatitude = DemoCity.MapMinLat, maxLatitude = DemoCity.MapMaxLat,
+                    minLongitude = DemoCity.MapMinLon, maxLongitude = DemoCity.MapMaxLon },
+                fictionalLandmarks = true
+            },
             accounts = new[]
             {
                 new { role = "Citizen", email = DemoCity.CitizenEmail, password = DemoCity.DemoPassword },

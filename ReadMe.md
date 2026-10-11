@@ -1,6 +1,8 @@
 # CivicLens AI
 ### From Citizen Observation to Verified Resolution
 
+> **Hyderabad seed:** Current demo geography, landmarks, scenarios and report defaults use fictional Hyderabad fixtures. Restart the in-memory demo after pulling; see [DEMO.md](DEMO.md).
+
 > **MVP browser UI added:** See [DEMO.md](DEMO.md) for the one-command local demo, role switching and jury walkthrough. The browser UI uses plain JavaScript served by the API. No Node.js install is needed.
 
 > **Earlier backend status:** the earlier backend work includes domain intelligence, API, seed data and demo scenarios. A plain JavaScript MVP browser interface is now available; a separate Angular implementation is still deferred. See [DEMO.md](DEMO.md) for current demo instructions. No tests were run or added for the MVP UI changes.

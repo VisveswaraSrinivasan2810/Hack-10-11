@@ -2,11 +2,15 @@ using CivicLens.Domain;
 
 namespace CivicLens.Application.Demo;
 
-/// <summary>Fictional demonstration city. All coordinates are shared by the seeder and the scenario runner.</summary>
+/// <summary>Fictional Hyderabad demonstration data, not verified real wards or landmarks. All coordinates are shared by the seeder and the scenario runner.</summary>
 public static class DemoCity
 {
-    public const double CenterLat = 12.9716;
-    public const double CenterLon = 77.5946;
+    public const string Name = "Hyderabad";
+    public const double MapMinLat = 17.3784, MapMaxLat = 17.3924;
+    public const double MapMinLon = 78.4721, MapMaxLon = 78.5021;
+
+    public const double CenterLat = 17.3850;
+    public const double CenterLon = 78.4867;
 
     public const string CitizenEmail = "citizen@civiclens.demo";
     public const string CitizenTwoEmail = "citizen2@civiclens.demo";
@@ -16,32 +20,32 @@ public static class DemoCity
 
     public static readonly (string Name, double MinLat, double MaxLat, double MinLon, double MaxLon)[] Zones =
     [
-        ("Zone A — Lakeview", 12.9650, 12.9790, 77.5800, 77.5900),
-        ("Zone B — Central", 12.9650, 12.9790, 77.5900, 77.6000),
-        ("Zone C — Old Town", 12.9650, 12.9790, 77.6000, 77.6100),
+        ("Zone A — Lakdikapul (demo)", 17.3784, 17.3924, 78.4721, 78.4821),
+        ("Zone B — Abids (demo)", 17.3784, 17.3924, 78.4821, 78.4921),
+        ("Zone C — Koti (demo)", 17.3784, 17.3924, 78.4921, 78.5021),
     ];
 
     public static readonly (string Name, PoiType Type, double Lat, double Lon, double Weight)[] Pois =
     [
-        ("Demo Public School", PoiType.School, 12.9712, 77.5940, 100),
-        ("City General Hospital", PoiType.Hospital, 12.9745, 77.5965, 100),
-        ("Central Bus Stop", PoiType.BusStop, 12.9700, 77.5955, 70),
-        ("Demo Junction", PoiType.Junction, 12.9730, 77.5985, 80),
-        ("Old Town Market", PoiType.Market, 12.9690, 77.6040, 85),
-        ("Lakeview Primary School", PoiType.School, 12.9700, 77.5830, 100),
+        ("Abids Demo Public School", PoiType.School, 17.3846, 78.4861, 100),
+        ("Abids Demo Hospital", PoiType.Hospital, 17.3879, 78.4886, 100),
+        ("Abids Demo Bus Stop", PoiType.BusStop, 17.3834, 78.4876, 70),
+        ("Abids Demo Junction", PoiType.Junction, 17.3864, 78.4906, 80),
+        ("Koti Demo Market", PoiType.Market, 17.3824, 78.4961, 85),
+        ("Lakdikapul Demo Primary School", PoiType.School, 17.3834, 78.4751, 100),
     ];
 
-    // Main jury story: pothole 72 m north of Demo Public School.
-    public const double SchoolRoadLat = 12.97185, SchoolRoadLon = 77.5940;
+    // Main jury story: pothole 72 m north of Abids Demo Public School.
+    public const double SchoolRoadLat = 17.38525, SchoolRoadLon = 78.4861;
     // Scenario spots (kept away from seeded incidents so that live demos create fresh incidents).
-    public const double QuietRoadLat = 12.9660, QuietRoadLon = 77.5860;       // quiet street, Zone A
-    public const double DuplicateLat = 12.9665, DuplicateLon = 77.5890;      // scenario 2 (kept apart from scenario 1)
-    public const double LakeviewSchoolLat = 12.97055, LakeviewSchoolLon = 77.5830; // ~60 m from Lakeview Primary
-    public const double GarbageLat = 12.9775, GarbageLon = 77.6070;           // Zone C
-    public const double WaterLat = 12.9670, WaterLon = 77.6080;               // Zone C
-    public const double RecurringXLat = 12.9701, RecurringXLon = 77.6030;     // Location X (3 resolved incidents)
-    public const double LeakCorrLat = 12.9677, LeakCorrLon = 77.5880;         // scenario 9 base leak (zone A)
-    public const double HotspotLat = 12.9730, HotspotLon = 77.5985;           // Demo Junction cluster
+    public const double QuietRoadLat = 17.3794, QuietRoadLon = 78.4781;       // quiet street, Zone A
+    public const double DuplicateLat = 17.3799, DuplicateLon = 78.4811;      // scenario 2 (kept apart from scenario 1)
+    public const double LakdikapulSchoolLat = 17.38395, LakdikapulSchoolLon = 78.4751; // ~60 m from Lakdikapul Primary
+    public const double GarbageLat = 17.3909, GarbageLon = 78.4991;           // Zone C
+    public const double WaterLat = 17.3804, WaterLon = 78.5001;               // Zone C
+    public const double RecurringXLat = 17.3835, RecurringXLon = 78.4951;     // Location X (3 resolved incidents)
+    public const double LeakCorrLat = 17.3811, LeakCorrLon = 78.4801;         // scenario 9 base leak (zone A)
+    public const double HotspotLat = 17.3864, HotspotLon = 78.4906;           // Abids Demo Junction cluster
 }
 
 /// <summary>Builds synthetic image uploads for seeding/scenarios. The file name carries a hint for the demo vision provider.</summary>

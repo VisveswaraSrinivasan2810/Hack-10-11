@@ -23,8 +23,8 @@ public sealed class DemoService(
         new(1, "New unique pothole", "A citizen reports a pothole on a quiet road: new incident, low contextual risk."),
         new(2, "Duplicate pothole observation", "A second citizen photographs the same pothole 11 m away: system proposes the existing incident and merges it."),
         new(3, "Critical pothole near school", "Two citizens report a pothole ~60 m from a school: contextual risk pushes CPS to CRITICAL."),
-        new(4, "Garbage accumulation", "Garbage accumulation reported at Old Town Lane."),
-        new(5, "Water leakage", "Water leakage reported in Old Town."),
+        new(4, "Garbage accumulation", "Garbage accumulation reported at Koti Demo Lane."),
+        new(5, "Water leakage", "Water leakage reported in Koti."),
         new(6, "Recurring road damage", "Road damage at Location X, which already had pothole (Jan), road damage (Apr), pothole (Jul): RECURRING INFRASTRUCTURE ISSUE."),
         new(7, "Successful resolution", "Full lifecycle: report → assign → work → after-photo → AI check → citizen confirmation → VERIFIED RESOLVED."),
         new(8, "Failed resolution verification", "Ghost closure: worker marks complete but the after-photo still shows the issue → RESOLUTION DISPUTED, REQUIRES REVIEW."),
@@ -77,8 +77,8 @@ public sealed class DemoService(
 
     private async Task<DemoScenarioResult> SchoolAsync(DemoScenarioDto s, CancellationToken ct)
     {
-        var first = await ReportAsync(ct, "pothole_deep", DemoCity.LakeviewSchoolLat, DemoCity.LakeviewSchoolLon, "Deep pothole outside the school");
-        var second = await ReportAsync(ct, "pothole", DemoCity.LakeviewSchoolLat, DemoCity.LakeviewSchoolLon + 0.0001, "Pothole near school gate");
+        var first = await ReportAsync(ct, "pothole_deep", DemoCity.LakdikapulSchoolLat, DemoCity.LakdikapulSchoolLon, "Deep pothole outside the school");
+        var second = await ReportAsync(ct, "pothole", DemoCity.LakdikapulSchoolLat, DemoCity.LakdikapulSchoolLon + 0.0001, "Pothole near school gate");
         var detail = await incidents.GetDetailAsync(second.IncidentId, new ActingUser(null, UserRole.Authority), ct);
         var hl = new List<string> { $"CPS {first.PriorityAfter:0} → {second.PriorityAfter:0} ({second.PriorityBand})" };
         hl.AddRange(detail.Priority.Reasons);
@@ -136,10 +136,10 @@ public sealed class DemoService(
         SubmitObservationResult? last = null;
         for (var k = 0; k < kinds.Length; k++)
         {
-            last = await ReportAsync(ct, kinds[k].Hint, 12.9660 + 0.0007 * k, 77.6060 + 0.0004 * k, kinds[k].Desc);
+            last = await ReportAsync(ct, kinds[k].Hint, 17.3794 + 0.0007 * k, 78.4981 + 0.0004 * k, kinds[k].Desc);
             codes.Add(last.Code);
         }
-        var hs = await db.Incidents.CountAsync(i => i.Latitude >= 12.9655 && i.Latitude <= 12.9690 && i.Longitude >= 77.6050 && i.Longitude <= 77.6085
+        var hs = await db.Incidents.CountAsync(i => i.Latitude >= 17.3789 && i.Latitude <= 17.3824 && i.Longitude >= 78.4971 && i.Longitude <= 78.5006
                                                  && i.Status != IncidentStatus.Rejected && i.Status != IncidentStatus.VerifiedResolved, ct);
         return new DemoScenarioResult(s.Id, s.Name, last!.IncidentId, last.Code, "Incident cluster created.",
             [$"Incidents: {string.Join(", ", codes.Distinct())}", $"{hs} incidents now within ~150 m of each other — see Hotspots on the dashboard."]);

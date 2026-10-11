@@ -115,48 +115,48 @@ public sealed class DemoSeeder(
         const IncidentStatus R = IncidentStatus.VerifiedResolved;
         var list = new List<Spec>
         {
-            // --- Recurring Location X (Old Town): pothole / road damage / pothole, all resolved
-            new(IssueCategory.Pothole, 12.97010, 77.60300, "MG Demo Road, 5th Cross", 270, R, 2, ResolveHours: 52, Path: ResolvedPath),
-            new(IssueCategory.RoadDamage, 12.97012, 77.60303, "MG Demo Road, 5th Cross", 180, R, 3, ResolveHours: 61, Path: ResolvedPath),
-            new(IssueCategory.Pothole, 12.97008, 77.60298, "MG Demo Road, 5th Cross", 90, R, 2, ResolveHours: 47, Path: ResolvedPath),
-            // --- Recurring Location Y (Central Avenue): three resolved + one active
-            new(IssueCategory.RoadDamage, 12.97600, 77.59250, "Central Avenue", 300, R, 2, ResolveHours: 70, Path: ResolvedPath),
-            new(IssueCategory.Pothole, 12.97602, 77.59252, "Central Avenue", 200, R, 2, ResolveHours: 55, Path: ResolvedPath),
-            new(IssueCategory.RoadDamage, 12.97598, 77.59248, "Central Avenue", 110, R, 3, ResolveHours: 66, Path: ResolvedPath),
-            new(IssueCategory.RoadDamage, 12.97601, 77.59251, "Central Avenue", 12, IncidentStatus.Validated, 2, Path: ["Validated"]),
-            // --- Recurring Location Z (Lakeview Main Road): three resolved
-            new(IssueCategory.Pothole, 12.96800, 77.58400, "Lakeview Main Road", 240, R, 2, ResolveHours: 44, Path: ResolvedPath),
-            new(IssueCategory.Pothole, 12.96802, 77.58402, "Lakeview Main Road", 150, R, 2, ResolveHours: 58, Path: ResolvedPath),
-            new(IssueCategory.RoadDamage, 12.96798, 77.58398, "Lakeview Main Road", 75, R, 2, ResolveHours: 49, Path: ResolvedPath),
+            // --- Recurring Location X (Koti): pothole / road damage / pothole, all resolved
+            new(IssueCategory.Pothole, 17.38350, 78.49510, "Koti Demo Road, 5th Cross", 270, R, 2, ResolveHours: 52, Path: ResolvedPath),
+            new(IssueCategory.RoadDamage, 17.38352, 78.49513, "Koti Demo Road, 5th Cross", 180, R, 3, ResolveHours: 61, Path: ResolvedPath),
+            new(IssueCategory.Pothole, 17.38348, 78.49508, "Koti Demo Road, 5th Cross", 90, R, 2, ResolveHours: 47, Path: ResolvedPath),
+            // --- Recurring Location Y (Abids Demo Avenue): three resolved + one active
+            new(IssueCategory.RoadDamage, 17.38940, 78.48460, "Abids Demo Avenue", 300, R, 2, ResolveHours: 70, Path: ResolvedPath),
+            new(IssueCategory.Pothole, 17.38942, 78.48462, "Abids Demo Avenue", 200, R, 2, ResolveHours: 55, Path: ResolvedPath),
+            new(IssueCategory.RoadDamage, 17.38938, 78.48458, "Abids Demo Avenue", 110, R, 3, ResolveHours: 66, Path: ResolvedPath),
+            new(IssueCategory.RoadDamage, 17.38941, 78.48461, "Abids Demo Avenue", 12, IncidentStatus.Validated, 2, Path: ["Validated"]),
+            // --- Recurring Location Z (Lakdikapul Demo Main Road): three resolved
+            new(IssueCategory.Pothole, 17.38140, 78.47610, "Lakdikapul Demo Main Road", 240, R, 2, ResolveHours: 44, Path: ResolvedPath),
+            new(IssueCategory.Pothole, 17.38142, 78.47612, "Lakdikapul Demo Main Road", 150, R, 2, ResolveHours: 58, Path: ResolvedPath),
+            new(IssueCategory.RoadDamage, 17.38138, 78.47608, "Lakdikapul Demo Main Road", 75, R, 2, ResolveHours: 49, Path: ResolvedPath),
             // --- Other resolved
-            new(IssueCategory.GarbageAccumulation, 12.97650, 77.60800, "Old Town Lane 4", 20, R, 3, ResolveHours: 30, Path: ResolvedPath),
+            new(IssueCategory.GarbageAccumulation, 17.38990, 78.50010, "Koti Demo Lane 4", 20, R, 3, ResolveHours: 30, Path: ResolvedPath),
 
-            // --- Emerging hotspot at Demo Junction (6 active incidents within ~100 m)
-            new(IssueCategory.Pothole, 12.97310, 77.59860, "Demo Junction, north arm", 2, IncidentStatus.Reported, 2),
-            new(IssueCategory.Pothole, 12.97295, 77.59840, "Demo Junction, west arm", 4, IncidentStatus.Validated, 3, Path: ["Validated"]),
-            new(IssueCategory.RoadDamage, 12.97320, 77.59870, "Demo Junction, signal pole", 6, IncidentStatus.Assigned, 2, Worker: true, Path: ["Assigned"]),
-            new(IssueCategory.RoadDamage, 12.97285, 77.59830, "Demo Junction, south arm", 9, IncidentStatus.Reported, 1),
-            new(IssueCategory.WaterLeakage, 12.97305, 77.59880, "Demo Junction, east arm", 11, IncidentStatus.InProgress, 3, Worker: true, Path: ["Assigned", "Accepted", "InProgress"]),
-            new(IssueCategory.WaterLeakage, 12.97290, 77.59860, "Demo Junction, underpass", 20, IncidentStatus.Reported, 1),
+            // --- Emerging hotspot at Abids Demo Junction (6 active incidents within ~100 m)
+            new(IssueCategory.Pothole, 17.38650, 78.49070, "Abids Demo Junction, north arm", 2, IncidentStatus.Reported, 2),
+            new(IssueCategory.Pothole, 17.38635, 78.49050, "Abids Demo Junction, west arm", 4, IncidentStatus.Validated, 3, Path: ["Validated"]),
+            new(IssueCategory.RoadDamage, 17.38660, 78.49080, "Abids Demo Junction, signal pole", 6, IncidentStatus.Assigned, 2, Worker: true, Path: ["Assigned"]),
+            new(IssueCategory.RoadDamage, 17.38625, 78.49040, "Abids Demo Junction, south arm", 9, IncidentStatus.Reported, 1),
+            new(IssueCategory.WaterLeakage, 17.38645, 78.49090, "Abids Demo Junction, east arm", 11, IncidentStatus.InProgress, 3, Worker: true, Path: ["Assigned", "Accepted", "InProgress"]),
+            new(IssueCategory.WaterLeakage, 17.38630, 78.49070, "Abids Demo Junction, underpass", 20, IncidentStatus.Reported, 1),
 
             // --- Cross-issue correlation pair (Zone A)
-            new(IssueCategory.WaterLeakage, 12.97550, 77.58700, "Lakeview 2nd Main", 35, IncidentStatus.Assigned, 2, Worker: true, Path: ["Assigned"]),
-            new(IssueCategory.RoadDamage, 12.97565, 77.58700, "Lakeview 2nd Main", 22, IncidentStatus.Reported, 2),
+            new(IssueCategory.WaterLeakage, 17.38890, 78.47910, "Lakdikapul Demo 2nd Main", 35, IncidentStatus.Assigned, 2, Worker: true, Path: ["Assigned"]),
+            new(IssueCategory.RoadDamage, 17.38905, 78.47910, "Lakdikapul Demo 2nd Main", 22, IncidentStatus.Reported, 2),
 
             // --- Critical incidents near sensitive places
-            new(IssueCategory.SewageOverflow, 12.97455, 77.59670, "City General Hospital approach", 3, IncidentStatus.Assigned, 5, Severity: 90, Worker: true, Path: ["Assigned"]),
-            new(IssueCategory.Pothole, 12.97075, 77.59400, "Demo School Road (south)", 5, IncidentStatus.Reported, 4, Severity: 84),
-            new(IssueCategory.RoadDamage, 12.96925, 77.60405, "Old Town Market Road", 5, IncidentStatus.Validated, 4, Severity: 88, Path: ["Validated"]),
+            new(IssueCategory.SewageOverflow, 17.38795, 78.48880, "Abids Demo Hospital approach", 3, IncidentStatus.Assigned, 5, Severity: 90, Worker: true, Path: ["Assigned"]),
+            new(IssueCategory.Pothole, 17.38415, 78.48610, "Abids Demo School Road (south)", 5, IncidentStatus.Reported, 4, Severity: 84),
+            new(IssueCategory.RoadDamage, 17.38265, 78.49615, "Koti Demo Market Road", 5, IncidentStatus.Validated, 4, Severity: 88, Path: ["Validated"]),
 
             // --- Disputed resolutions ("ghost closures")
-            new(IssueCategory.GarbageAccumulation, 12.97720, 77.60500, "Old Town Lane 9", 15, IncidentStatus.RequiresReview, 3, Confirmations: 2, ResolveHours: 40, Path: DisputedPath),
-            new(IssueCategory.BrokenStreetlight, 12.96680, 77.58550, "Lakeview 5th Cross", 18, IncidentStatus.RequiresReview, 2, ResolveHours: 36, Path: DisputedPath),
+            new(IssueCategory.GarbageAccumulation, 17.39060, 78.49710, "Koti Demo Lane 9", 15, IncidentStatus.RequiresReview, 3, Confirmations: 2, ResolveHours: 40, Path: DisputedPath),
+            new(IssueCategory.BrokenStreetlight, 17.38020, 78.47760, "Lakdikapul Demo 5th Cross", 18, IncidentStatus.RequiresReview, 2, ResolveHours: 36, Path: DisputedPath),
 
             // --- Work in progress assigned to the demo worker
-            new(IssueCategory.GarbageAccumulation, 12.97580, 77.58150, "Lakeview Park Gate", 7, IncidentStatus.InProgress, 3, Worker: true, Path: ["Assigned", "Accepted", "InProgress"]),
+            new(IssueCategory.GarbageAccumulation, 17.38920, 78.47360, "Lakdikapul Demo Park Gate", 7, IncidentStatus.InProgress, 3, Worker: true, Path: ["Assigned", "Accepted", "InProgress"]),
 
             // --- Invalid report (demonstrates trust penalty + audit)
-            new(IssueCategory.Other, 12.96600, 77.60900, "Old Town edge", 10, IncidentStatus.Rejected, 1, Path: ["Rejected"]),
+            new(IssueCategory.Other, 17.37940, 78.50110, "Koti demo edge", 10, IncidentStatus.Rejected, 1, Path: ["Rejected"]),
         };
         return list;
     }
