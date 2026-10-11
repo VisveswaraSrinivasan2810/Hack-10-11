@@ -373,6 +373,16 @@ public sealed class IncidentService(
         var workerIds = incidents.Where(i => i.AssignedWorkerId != null).Select(i => i.AssignedWorkerId!.Value).Distinct().ToList();
         var workers = await db.Users.AsNoTracking().Where(u => workerIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.Name, ct);
         var zones = await db.Zones.AsNoTracking().Select(z => new { z.Id, z.Name }).ToDictionaryAsync(z => z.Id, z => z.Name, ct);
+        // Existing seeded incidents may already have uploaded observations but still
+        // point at the illustration. Prefer their most recent uploaded evidence.
+        var illustrationIds = incidents.Where(i => string.IsNullOrWhiteSpace(i.PrimaryImageUrl) || i.PrimaryImageUrl.StartsWith("/demo/", StringComparison.Ordinal))
+            .Select(i => i.Id).ToList();
+        var uploaded = await (from io in db.IncidentObservations
+                              join o in db.Observations on io.ObservationId equals o.Id
+                              where illustrationIds.Contains(io.IncidentId) && o.ImageUrl.StartsWith("/uploads/")
+                              orderby o.CreatedAt descending, o.Id
+                              select new { io.IncidentId, o.ImageUrl }).AsNoTracking().ToListAsync(ct);
+        var preferredImages = uploaded.GroupBy(o => o.IncidentId).ToDictionary(g => g.Key, g => g.First().ImageUrl);
         var now = lifecycle.Now;
         return incidents.Select(i => new IncidentSummaryDto(
             i.Id, i.PublicIncidentCode, i.Category.ToString(), CategoryRules.Label(i.Category), i.Latitude, i.Longitude, i.LocationLabel,
@@ -380,7 +390,7 @@ public sealed class IncidentService(
             i.ObservationCount, i.ConfirmationCount, i.FirstObservedAt, i.UpdatedAt,
             Math.Round(((i.IsActive ? now : i.ResolvedAt ?? now) - i.FirstObservedAt).TotalHours, 1),
             i.AssignedWorkerId is { } w && workers.TryGetValue(w, out var n) ? n : null, i.AssignedWorkerId,
-            i.RecurrencePriorCount >= _o.RecurringMinPriorIncidents, i.RecurrencePriorCount, i.PrimaryImageUrl,
+            i.RecurrencePriorCount >= _o.RecurringMinPriorIncidents, i.RecurrencePriorCount, preferredImages.TryGetValue(i.Id, out var image) ? image : i.PrimaryImageUrl,
             i.ZoneId is { } z && zones.TryGetValue(z, out var zn) ? zn : null, null)).ToList();
     }
 }

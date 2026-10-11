@@ -176,7 +176,9 @@ public sealed class ObservationService(
             { IncidentId = incident.Id, ObservationId = observation.Id, SameIncidentScore = sameScore, MergeReason = mergeReason, CreatedAt = now });
             incident.ObservationCount++;
             incident.LastObservedAt = now;
-            incident.PrimaryImageUrl ??= observation.ImageUrl;
+            // Replace a seeded illustration when a citizen attaches uploaded evidence.
+            if (string.IsNullOrWhiteSpace(incident.PrimaryImageUrl) || incident.PrimaryImageUrl.StartsWith("/demo/", StringComparison.Ordinal))
+                incident.PrimaryImageUrl = observation.ImageUrl;
             if (!incident.SeverityOverridden) incident.SeverityScore = Math.Max(incident.SeverityScore, observation.SeverityScore);
 
             lifecycle.AddEvent(incident.Id, "ObservationMerged",

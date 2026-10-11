@@ -93,13 +93,16 @@ function Evidence({
       </div>
     );
   return url ? (
+    <>
     <img
-      className={className}
+      className={`${className} ${path.startsWith("/demo/") ? "demo-illustration" : ""}`}
       src={url}
       alt={label}
       loading="lazy"
       onError={() => setFailed(true)}
     />
+    {path.startsWith("/demo/") && <span className="evidence-caption">Seeded demo illustration · no uploaded photo yet</span>}
+    </>
   ) : (
     <div className="evidence-empty">Loading evidence…</div>
   );
