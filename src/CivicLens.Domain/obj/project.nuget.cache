@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "tyCqSL1x57E=",
+  "success": true,
+  "projectFilePath": "C:\\Hack\\src\\CivicLens.Domain\\CivicLens.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Vishwa\\.nuget\\packages\\nettopologysuite\\2.5.0\\nettopologysuite.2.5.0.nupkg.sha512",
+    "C:\\Users\\Vishwa\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512"
+  ],
+  "logs": []
+}

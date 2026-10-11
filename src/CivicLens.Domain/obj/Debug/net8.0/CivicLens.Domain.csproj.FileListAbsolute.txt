@@ -1,0 +1,12 @@
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.csproj.AssemblyReference.cache
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.AssemblyInfoInputs.cache
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.AssemblyInfo.cs
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.csproj.CoreCompileInputs.cache
+C:\Hack\src\CivicLens.Domain\bin\Debug\net8.0\CivicLens.Domain.deps.json
+C:\Hack\src\CivicLens.Domain\bin\Debug\net8.0\CivicLens.Domain.dll
+C:\Hack\src\CivicLens.Domain\bin\Debug\net8.0\CivicLens.Domain.pdb
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.dll
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\refint\CivicLens.Domain.dll
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\CivicLens.Domain.pdb
+C:\Hack\src\CivicLens.Domain\obj\Debug\net8.0\ref\CivicLens.Domain.dll

@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{29D8E658-3D65-46FF-A9E7-EC1FE42769BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicLens.Domain", "src\CivicLens.Domain\CivicLens.Domain.csproj", "{D2E51D4D-4B68-4653-95F6-49F1110CD432}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicLens.Application", "src\CivicLens.Application\CivicLens.Application.csproj", "{F185E504-5868-4BA2-81FE-A90BD36C637C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicLens.Infrastructure", "src\CivicLens.Infrastructure\CivicLens.Infrastructure.csproj", "{6296073F-7AE5-4C80-AE48-84664E6BD062}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicLens.Api", "src\CivicLens.Api\CivicLens.Api.csproj", "{75E5EF14-4A62-416D-8CFD-D7165B48532C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{93AA9308-FB8F-48D3-88F6-4CEB68492C59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicLens.Tests", "tests\CivicLens.Tests\CivicLens.Tests.csproj", "{2FA0EBC7-2385-44ED-8309-175939C1D435}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2E51D4D-4B68-4653-95F6-49F1110CD432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E51D4D-4B68-4653-95F6-49F1110CD432}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E51D4D-4B68-4653-95F6-49F1110CD432}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E51D4D-4B68-4653-95F6-49F1110CD432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F185E504-5868-4BA2-81FE-A90BD36C637C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F185E504-5868-4BA2-81FE-A90BD36C637C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F185E504-5868-4BA2-81FE-A90BD36C637C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F185E504-5868-4BA2-81FE-A90BD36C637C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6296073F-7AE5-4C80-AE48-84664E6BD062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6296073F-7AE5-4C80-AE48-84664E6BD062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6296073F-7AE5-4C80-AE48-84664E6BD062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6296073F-7AE5-4C80-AE48-84664E6BD062}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75E5EF14-4A62-416D-8CFD-D7165B48532C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75E5EF14-4A62-416D-8CFD-D7165B48532C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75E5EF14-4A62-416D-8CFD-D7165B48532C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75E5EF14-4A62-416D-8CFD-D7165B48532C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FA0EBC7-2385-44ED-8309-175939C1D435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FA0EBC7-2385-44ED-8309-175939C1D435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FA0EBC7-2385-44ED-8309-175939C1D435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FA0EBC7-2385-44ED-8309-175939C1D435}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D2E51D4D-4B68-4653-95F6-49F1110CD432} = {29D8E658-3D65-46FF-A9E7-EC1FE42769BC}
+		{F185E504-5868-4BA2-81FE-A90BD36C637C} = {29D8E658-3D65-46FF-A9E7-EC1FE42769BC}
+		{6296073F-7AE5-4C80-AE48-84664E6BD062} = {29D8E658-3D65-46FF-A9E7-EC1FE42769BC}
+		{75E5EF14-4A62-416D-8CFD-D7165B48532C} = {29D8E658-3D65-46FF-A9E7-EC1FE42769BC}
+		{2FA0EBC7-2385-44ED-8309-175939C1D435} = {93AA9308-FB8F-48D3-88F6-4CEB68492C59}
+	EndGlobalSection
+EndGlobal

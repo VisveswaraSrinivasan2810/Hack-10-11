@@ -1,0 +1,2136 @@
+# CIVICLENS AI — MASTER BUILD SPECIFICATION
+
+## 0. ROLE
+
+You are an expert product engineer, AI engineer, UX designer, solution architect, GIS engineer, and hackathon product builder.
+
+Build a complete working MVP named:
+
+# CivicLens AI
+### From Citizen Observation to Verified Resolution
+
+The application must be visually impressive, technically credible, easy to demonstrate, and realistic for a hackathon.
+
+Do NOT build a generic complaint-management CRUD application.
+
+The fundamental innovation is:
+
+> CivicLens converts fragmented citizen observations into verified, geographically deduplicated, dynamically prioritized civic incidents and tracks them until real-world resolution is independently verified.
+
+The core philosophy is:
+
+**Observation → Intelligence → Incident → Priority → Action → Proof → Learning**
+
+Existing systems often operate like:
+
+**Complaint → Ticket → Closed**
+
+CivicLens must demonstrate why the first model is better.
+
+---
+
+# 1. PRODUCT OBJECTIVE
+
+Citizens encounter civic infrastructure problems such as:
+
+- potholes
+- garbage accumulation
+- water leakage
+- sewage overflow
+- broken streetlights
+- damaged roads
+- damaged footpaths
+- fallen trees
+- illegal dumping
+- damaged public infrastructure
+
+Citizens often do not know:
+
+- whether someone already reported the issue
+- which authority owns the issue
+- how serious the issue is
+- whether similar reports represent the same problem
+- whether authorities acted on it
+- whether a "closed" complaint was actually fixed
+- whether the problem keeps recurring
+
+Authorities face another problem:
+
+They receive fragmented complaints rather than a clean representation of real-world incidents.
+
+CivicLens must bridge this gap.
+
+---
+
+# 2. PRIMARY PRODUCT PRINCIPLE
+
+Do NOT make `Report` the central domain object.
+
+The central domain object must be:
+
+`CivicIncident`
+
+A citizen submits an `Observation`.
+
+Multiple observations may belong to one CivicIncident.
+
+Example:
+
+```text
+Observation A ─┐
+Observation B ─┤
+Observation C ─┼── Civic Incident CL-1027
+Observation D ─┘
+```
+
+Four citizen reports do NOT necessarily mean four civic problems.
+
+This distinction must appear throughout the architecture, database, APIs and UI.
+
+---
+
+# 3. TARGET USERS
+
+Implement three user roles.
+
+## 3.1 Citizen
+
+Citizen can:
+
+- register/login
+- view nearby incidents
+- capture/upload issue photo
+- submit observation
+- allow/select location
+- review AI-detected issue
+- confirm/edit AI classification
+- see possible existing incidents
+- attach observation to existing incident
+- create new incident when necessary
+- confirm an existing incident
+- track incidents
+- receive status updates
+- verify resolution
+- dispute incorrect resolution
+- view contribution history
+- view trust score
+
+## 3.2 Authority / Administrator
+
+Authority can:
+
+- view city intelligence dashboard
+- view incidents on map
+- filter incidents
+- view high-priority incidents
+- inspect evidence
+- inspect merged observations
+- override incorrect AI classification
+- assign incidents
+- update status
+- view hotspots
+- view recurring issues
+- view disputed resolutions
+- see performance analytics
+
+## 3.3 Field Worker
+
+Field worker can:
+
+- view assigned incidents
+- view incident location
+- view original evidence
+- navigate to issue
+- mark work started
+- upload after-resolution photo
+- add resolution notes
+- submit resolution for verification
+
+---
+
+# 4. CORE USER EXPERIENCE
+
+Citizen reporting must be extremely simple.
+
+The principle is:
+
+# SEE → SNAP → SUBMIT
+
+Do NOT require citizens to complete long forms.
+
+Typical workflow:
+
+```text
+Citizen uploads/captures photo
+        ↓
+Location captured/selected
+        ↓
+AI analyzes observation
+        ↓
+Issue category detected
+        ↓
+Severity estimated
+        ↓
+Nearby incidents searched
+        ↓
+Potential duplicate incidents ranked
+        ↓
+Citizen confirms existing incident
+OR
+creates new incident
+        ↓
+Incident priority recalculated
+        ↓
+Authority dashboard updated
+```
+
+---
+
+# 5. NOVELTY ENGINE
+
+The application must visibly demonstrate multiple novel concepts.
+
+Do not hide these only in backend code.
+
+Each should have UI representation.
+
+---
+
+# 6. NOVELTY 1 — CIVIC INCIDENT FINGERPRINT
+
+Create a conceptual `CivicFingerprint`.
+
+It represents the identity of a real-world civic issue.
+
+Inputs:
+
+- latitude
+- longitude
+- issue category
+- observation timestamp
+- visual similarity
+- spatial proximity
+- temporal proximity
+
+For the hackathon MVP, keep the implementation deterministic and understandable.
+
+Example score:
+
+```text
+SameIncidentScore =
+    0.40 * spatialSimilarity
+  + 0.30 * categorySimilarity
+  + 0.20 * visualSimilarity
+  + 0.10 * temporalSimilarity
+```
+
+All scores normalized from 0 to 1.
+
+Interpretation:
+
+```text
+>= 0.85 → Very likely same incident
+0.65-0.84 → Possible match; ask citizen
+< 0.65 → Likely new incident
+```
+
+Do NOT silently merge uncertain incidents.
+
+Always preserve human override.
+
+---
+
+# 7. EASY DUPLICATE DETECTION IMPLEMENTATION
+
+Hackathon implementation should be simple.
+
+Step 1:
+
+Use PostGIS to search existing unresolved incidents within configurable radius, initially 50 meters.
+
+Step 2:
+
+Filter by same/similar category.
+
+Step 3:
+
+Calculate geographic similarity.
+
+Step 4:
+
+If an image embedding service is available, calculate image similarity.
+
+If not available, implement a replaceable mock/deterministic similarity provider.
+
+Step 5:
+
+Calculate SameIncidentScore.
+
+Step 6:
+
+Show top matches to citizen.
+
+Example:
+
+```text
+Possible Existing Incident
+
+CL-1027
+Pothole
+12 metres away
+Reported 2 hours ago
+3 citizen confirmations
+
+Same Incident Confidence: 93%
+
+[Yes, Same Issue]
+[No, Create New Incident]
+```
+
+---
+
+# 8. NOVELTY 2 — CIVIC PRIORITY SCORE
+
+Implement a transparent dynamic priority score called:
+
+# CPS — Civic Priority Score
+
+Score range:
+
+`0-100`
+
+Suggested formula:
+
+```text
+CPS =
+    Severity             * 0.25
+  + CitizenEvidence      * 0.15
+  + LocationRisk         * 0.20
+  + IncidentAge          * 0.10
+  + Exposure             * 0.15
+  + Recurrence           * 0.15
+```
+
+Keep weights configurable.
+
+Priority bands:
+
+```text
+0-29   LOW
+30-49  MODERATE
+50-69  HIGH
+70-84  VERY HIGH
+85-100 CRITICAL
+```
+
+Every incident page must explain WHY its score exists.
+
+Example:
+
+```text
+CIVIC PRIORITY SCORE
+89/100 — CRITICAL
+
+Severity                 92
+Citizen Evidence         80
+Location Risk            98
+Incident Age             40
+Public Exposure          95
+Recurrence               65
+
+Why Critical?
+
+• Dangerous road damage detected
+• 7 independent observations
+• Located near a school
+• High public exposure
+```
+
+Avoid black-box scoring.
+
+---
+
+# 9. NOVELTY 3 — CONTEXTUAL RISK
+
+The same physical issue can have different urgency depending on its surroundings.
+
+Implement contextual risk.
+
+Example:
+
+Pothole on quiet road:
+
+```text
+Severity: Medium
+Location Risk: 30
+```
+
+Pothole near:
+
+- school
+- hospital
+- busy junction
+- bus stop
+
+may have:
+
+```text
+Severity: Medium
+Location Risk: 90
+```
+
+For hackathon mode, seed Points of Interest.
+
+Examples:
+
+- schools
+- hospitals
+- bus stops
+- major junctions
+
+Use PostGIS proximity queries.
+
+The application must visibly explain context:
+
+> "Priority increased because this incident is 70 metres from a school."
+
+---
+
+# 10. NOVELTY 4 — PROOF OF RESOLUTION
+
+An authority changing status to CLOSED must NOT automatically mean resolved.
+
+Create separate concepts:
+
+```text
+OperationalStatus
+ResolutionStatus
+```
+
+Example:
+
+```text
+OperationalStatus = WorkCompleted
+ResolutionStatus = AwaitingVerification
+```
+
+Field worker must upload:
+
+- after photo
+- optional notes
+- completion timestamp
+
+System compares before and after evidence.
+
+Return:
+
+```text
+Resolution Verification
+
+Before Issue:
+Pothole detected
+
+After Image:
+Pothole not detected
+
+AI Verification:
+94%
+
+Citizen Confirmation:
+4 / 5
+
+Resolution Confidence:
+92%
+
+VERIFIED RESOLVED
+```
+
+---
+
+# 11. NOVELTY 5 — GHOST CLOSURE DETECTION
+
+If authority marks work complete but evidence suggests issue remains:
+
+```text
+⚠ RESOLUTION DISPUTED
+
+Authority Status:
+Work Completed
+
+Visual Verification:
+Issue may still be present
+
+Citizen Verification:
+4 of 5 citizens say unresolved
+
+Resolution Confidence:
+24%
+
+STATUS:
+REQUIRES REVIEW
+```
+
+Never automatically accuse an authority of wrongdoing.
+
+Use neutral terminology:
+
+- Verification Failed
+- Resolution Disputed
+- Requires Review
+
+---
+
+# 12. NOVELTY 6 — CITIZEN RESOLUTION VERIFICATION
+
+Citizens who:
+
+- originally reported the incident
+- confirmed the incident
+- are geographically relevant
+
+can be asked:
+
+> Is this problem actually fixed?
+
+Options:
+
+```text
+YES — Fixed
+NO — Still Exists
+UNSURE
+```
+
+Store each vote.
+
+Calculate citizen verification confidence.
+
+---
+
+# 13. NOVELTY 7 — RECURRENCE INTELLIGENCE
+
+When a new incident is created, search historical resolved incidents near the same location with the same category.
+
+Example:
+
+```text
+⚠ RECURRING ISSUE
+
+This location has experienced:
+
+4 road-damage incidents
+within 180 days.
+
+Previous incidents:
+CL-431
+CL-692
+CL-811
+CL-934
+
+Recurrence Risk:
+HIGH
+```
+
+Recurrence must influence CPS.
+
+---
+
+# 14. NOVELTY 8 — INFRASTRUCTURE MEMORY
+
+Create an `InfrastructureMemory` concept.
+
+The city should remember what happened at locations over time.
+
+For a selected map area/location show:
+
+```text
+LOCATION HISTORY
+
+Jan 2026 — Water Leakage
+Feb 2026 — Road Damage
+Apr 2026 — Pothole
+Jul 2026 — Pothole
+Oct 2026 — Road Damage
+```
+
+This turns CivicLens from a ticketing system into an infrastructure intelligence platform.
+
+---
+
+# 15. NOVELTY 9 — CROSS-ISSUE CORRELATION
+
+Implement a simple rule-based correlation engine.
+
+Example rule:
+
+```text
+Water Leakage
+within 50m
+followed within 30 days by
+Road Damage/Pothole
+```
+
+Create:
+
+`PotentialCorrelation`
+
+Example UI:
+
+```text
+INSIGHT
+
+Possible infrastructure relationship detected.
+
+Water leakage:
+CL-1002 — 12 Sep
+
+Road damage:
+CL-1048 — 25 Sep
+
+Distance:
+18m
+
+Potential relationship:
+Water leakage may have contributed to road deterioration.
+
+Confidence:
+Moderate
+```
+
+Always use language such as:
+
+- possible
+- potential
+- may be related
+
+Never claim causation without evidence.
+
+---
+
+# 16. NOVELTY 10 — CIVIC HOTSPOTS
+
+Use PostGIS to cluster incidents.
+
+Dashboard should show:
+
+- active incident clusters
+- critical clusters
+- recurring clusters
+- category-specific clusters
+
+Example:
+
+```text
+EMERGING HOTSPOT
+
+Area:
+Demo Junction
+
+Last 14 days:
+
+Water leakage       6
+Road damage         5
+Potholes             8
+
+Trend:
++38%
+
+Priority:
+HIGH
+```
+
+---
+
+# 17. NOVELTY 11 — CIVIC HEALTH SCORE
+
+Divide demo city into zones.
+
+Each zone gets:
+
+# Civic Health Score
+
+Range:
+
+`0-100`
+
+Higher = healthier.
+
+Factors can include:
+
+- unresolved incident density
+- critical incidents
+- recurrence
+- average resolution time
+- disputed resolutions
+
+Example:
+
+```text
+Zone A
+91 — HEALTHY
+
+Zone B
+67 — NEEDS ATTENTION
+
+Zone C
+41 — CRITICAL
+```
+
+Keep formula simple and transparent.
+
+---
+
+# 18. NOVELTY 12 — CITIZEN TRUST SCORE
+
+Do NOT gamify based on number of reports.
+
+That encourages spam.
+
+Trust should increase based on useful participation.
+
+Factors:
+
+- verified observations
+- accurate classifications
+- valid confirmations
+- resolution verification participation
+- reports rejected as invalid
+
+Example:
+
+```text
+CITIZEN TRUST
+
+Verified observations       18
+Useful confirmations        11
+Resolution checks            7
+Invalid submissions          1
+
+Trust Score:
+88/100
+```
+
+Trust score can slightly influence evidence confidence.
+
+Do not allow it to override physical evidence.
+
+---
+
+# 19. FRAUD / ABUSE PROTECTION
+
+Support the following scenarios conceptually:
+
+- same image uploaded repeatedly
+- citizen uploads irrelevant image
+- incorrect location
+- duplicate reports
+- malicious reports
+- AI misclassification
+- citizen disputes AI
+- citizen creates duplicate despite match
+- authority incorrectly categorizes issue
+- field worker uploads invalid resolution image
+- conflicting citizen votes
+
+Implement practical MVP protections:
+
+1. duplicate image hash
+2. location validation
+3. configurable report rate limit
+4. AI confidence threshold
+5. human override
+6. audit trail
+
+---
+
+# 20. AI CONFIDENCE DESIGN
+
+Never display AI predictions as absolute facts.
+
+Example:
+
+```text
+Detected:
+Pothole
+
+AI Confidence:
+92%
+```
+
+For low confidence:
+
+```text
+We're not fully sure.
+
+Possible categories:
+
+Road Damage      51%
+Pothole          32%
+Other            17%
+
+Please select the correct category.
+```
+
+---
+
+# 21. FALLBACK-FIRST AI ARCHITECTURE
+
+The application MUST run even without paid AI APIs.
+
+Create interfaces:
+
+```csharp
+IIssueClassificationService
+IImageSimilarityService
+IResolutionVerificationService
+IContextRiskService
+IPriorityScoringService
+IIncidentMatchingService
+```
+
+Provide two implementations where appropriate:
+
+```text
+RealAIProvider
+DemoAIProvider
+```
+
+`DemoAIProvider` must produce deterministic realistic results.
+
+The entire demo must work offline/local except maps if external tiles are used.
+
+Do not make the hackathon demonstration dependent on an unreliable external AI service.
+
+---
+
+# 22. DEMO MODE
+
+Create:
+
+`DEMO_MODE=true`
+
+Demo mode must:
+
+- seed users
+- seed authority account
+- seed field worker
+- seed incidents
+- seed historical incidents
+- seed POIs
+- seed hotspot data
+- provide deterministic AI responses
+
+Add a visible but unobtrusive:
+
+`Demo Scenario`
+
+option for developers/admins.
+
+Include scenarios:
+
+1. New unique pothole
+2. Duplicate pothole observation
+3. Critical pothole near school
+4. Garbage accumulation
+5. Water leakage
+6. Recurring road damage
+7. Successful resolution
+8. Failed resolution verification
+9. Cross-issue correlation
+10. Civic hotspot
+
+---
+
+# 23. MAIN DEMO STORY
+
+Optimize the application for this jury demo.
+
+## STEP 1
+
+Citizen uploads pothole image.
+
+System:
+
+```text
+Issue:
+Pothole
+
+AI Confidence:
+96%
+
+Location:
+Demo School Road
+```
+
+## STEP 2
+
+System detects:
+
+```text
+School detected nearby:
+72 metres
+
+Location Risk:
+HIGH
+```
+
+## STEP 3
+
+Another citizen submits same issue.
+
+System says:
+
+```text
+Possible Existing Incident
+
+CL-1027
+
+Distance:
+11m
+
+Same-Incident Confidence:
+94%
+
+[Confirm Existing Incident]
+[Create Separate Incident]
+```
+
+Citizen confirms.
+
+## STEP 4
+
+Incident changes:
+
+```text
+Citizen Observations:
+1 → 2
+
+Civic Priority:
+76 → 88
+
+CRITICAL
+```
+
+## STEP 5
+
+Authority dashboard immediately displays incident.
+
+Authority assigns field worker.
+
+## STEP 6
+
+Field worker completes repair and uploads after photo.
+
+## STEP 7
+
+System performs before/after verification.
+
+```text
+Issue no longer detected.
+
+Visual Verification:
+95%
+```
+
+## STEP 8
+
+Citizen confirms.
+
+```text
+VERIFIED RESOLVED ✓
+```
+
+## STEP 9
+
+Show map/dashboard:
+
+```text
+CITY CIVIC HEALTH
+
+Active Incidents
+Critical Incidents
+Resolved Today
+Recurring Issues
+Disputed Resolutions
+Emerging Hotspots
+Average Resolution Time
+```
+
+---
+
+# 24. CITIZEN APPLICATION SCREENS
+
+Build responsive mobile-first UI.
+
+Required screens:
+
+## Authentication
+- Login
+- Register
+- Demo login
+
+## Citizen Home
+
+Show:
+
+- greeting
+- current civic health
+- nearby incidents
+- report button
+- recent activity
+
+Large CTA:
+
+`Report an Issue`
+
+## Report Issue
+
+Support:
+
+- camera/upload
+- image preview
+- location
+- optional description
+
+CTA:
+
+`Analyze Issue`
+
+## AI Analysis
+
+Display:
+
+- detected category
+- confidence
+- severity
+- location context
+- editable category
+
+## Duplicate Match
+
+Display possible incidents.
+
+## Submission Success
+
+Show:
+
+- Incident ID
+- CPS
+- status
+- citizen observation count
+
+## Nearby Map
+
+Map with incident markers.
+
+## Incident Details
+
+Show:
+
+- image
+- category
+- status
+- CPS
+- score explanation
+- observations
+- timeline
+- nearby context
+- recurrence
+- verification state
+
+## My Contributions
+
+Show observations and confirmations.
+
+## Resolution Verification
+
+Show before/after image.
+
+Buttons:
+
+- Fixed
+- Still Exists
+- Unsure
+
+## Profile
+
+Show Civic Trust Score.
+
+---
+
+# 25. AUTHORITY DASHBOARD
+
+Desktop-first Angular dashboard.
+
+Must look like a real civic command center.
+
+Sections:
+
+## Overview
+
+Cards:
+
+- Active Incidents
+- Critical
+- High Priority
+- Resolved Today
+- Recurring
+- Disputed
+- Average Resolution Time
+- Civic Health Score
+
+## Live Incident Map
+
+Markers by priority.
+
+Click marker → incident preview.
+
+## Priority Queue
+
+Sort primarily by CPS.
+
+Columns:
+
+- Incident
+- Category
+- Location
+- CPS
+- Observations
+- Age
+- Status
+- Assignee
+
+## Hotspots
+
+Map/list.
+
+## Recurring Infrastructure Issues
+
+Show locations with repeated incidents.
+
+## Resolution Verification Queue
+
+Show incidents waiting for verification.
+
+## Disputed Resolutions
+
+Highlight verification failures.
+
+## Analytics
+
+Charts:
+
+- incidents by category
+- incidents by status
+- average resolution time
+- recurrence trend
+- zone health
+- CPS distribution
+
+---
+
+# 26. FIELD WORKER EXPERIENCE
+
+Mobile responsive.
+
+Screens:
+
+- My Assignments
+- Assignment Details
+- Map/location
+- Start Work
+- Upload Resolution Evidence
+- Resolution Notes
+- Submit Work
+
+Workflow:
+
+```text
+ASSIGNED
+↓
+ACCEPTED
+↓
+IN_PROGRESS
+↓
+WORK_COMPLETED
+↓
+AWAITING_VERIFICATION
+↓
+VERIFIED_RESOLVED
+```
+
+Alternative:
+
+```text
+AWAITING_VERIFICATION
+↓
+VERIFICATION_FAILED
+↓
+REQUIRES_REVIEW
+```
+
+---
+
+# 27. INCIDENT STATE MACHINE
+
+Do NOT allow arbitrary status transitions.
+
+Implement state machine.
+
+Statuses:
+
+```text
+Detected
+Reported
+Validated
+Assigned
+Accepted
+InProgress
+WorkCompleted
+AwaitingVerification
+VerifiedResolved
+VerificationFailed
+RequiresReview
+Reopened
+Rejected
+```
+
+Validate allowed transitions.
+
+Store every transition in audit history.
+
+---
+
+# 28. DATABASE
+
+Use PostgreSQL + PostGIS.
+
+Core entities:
+
+## User
+
+```text
+Id
+Name
+Email
+PasswordHash
+Role
+TrustScore
+CreatedAt
+```
+
+## Observation
+
+```text
+Id
+UserId
+ImageUrl
+ImageHash
+Latitude
+Longitude
+Location Geography(Point)
+Description
+DetectedCategory
+AIConfidence
+CitizenSelectedCategory
+CreatedAt
+ValidationStatus
+```
+
+## CivicIncident
+
+```text
+Id
+PublicIncidentCode
+Category
+Latitude
+Longitude
+Location Geography(Point)
+SeverityScore
+PriorityScore
+PriorityBand
+Status
+FirstObservedAt
+LastObservedAt
+ObservationCount
+AssignedWorkerId
+ResolutionStatus
+CreatedAt
+UpdatedAt
+```
+
+## IncidentObservation
+
+```text
+IncidentId
+ObservationId
+SameIncidentScore
+MergeReason
+CreatedAt
+```
+
+## PriorityScoreBreakdown
+
+```text
+IncidentId
+Severity
+CitizenEvidence
+LocationRisk
+IncidentAge
+Exposure
+Recurrence
+FinalScore
+CalculatedAt
+```
+
+## PointOfInterest
+
+```text
+Id
+Name
+Type
+Location
+RiskWeight
+```
+
+## IncidentAssignment
+
+```text
+Id
+IncidentId
+WorkerId
+AssignedBy
+AssignedAt
+AcceptedAt
+CompletedAt
+```
+
+## ResolutionEvidence
+
+```text
+Id
+IncidentId
+BeforeImageUrl
+AfterImageUrl
+WorkerNotes
+AIConfidence
+VerificationResult
+SubmittedAt
+```
+
+## CitizenVerification
+
+```text
+Id
+IncidentId
+UserId
+Vote
+CreatedAt
+```
+
+## IncidentHistory
+
+```text
+Id
+IncidentId
+EventType
+OldStatus
+NewStatus
+ActorId
+Metadata
+CreatedAt
+```
+
+## PotentialCorrelation
+
+```text
+Id
+SourceIncidentId
+TargetIncidentId
+CorrelationType
+Confidence
+Explanation
+CreatedAt
+```
+
+## Zone
+
+```text
+Id
+Name
+Boundary
+CivicHealthScore
+```
+
+---
+
+# 29. BACKEND TECHNOLOGY
+
+Use:
+
+- .NET 8 / ASP.NET Core
+- Entity Framework Core
+- PostgreSQL
+- PostGIS
+- NetTopologySuite
+- JWT authentication
+- FluentValidation
+- Swagger / OpenAPI
+- structured logging
+
+Use clean but hackathon-friendly architecture.
+
+Suggested:
+
+```text
+src/
+
+CivicLens.Api
+CivicLens.Application
+CivicLens.Domain
+CivicLens.Infrastructure
+```
+
+Do NOT create unnecessary microservices.
+
+Build a modular monolith.
+
+---
+
+# 30. FRONTEND
+
+Preferred:
+
+Citizen:
+
+Responsive Angular PWA.
+
+Authority:
+
+Angular dashboard.
+
+Field worker:
+
+Responsive Angular PWA.
+
+Reuse components where possible.
+
+One Angular workspace is acceptable.
+
+Suggested structure:
+
+```text
+apps/
+ citizen
+ authority
+ worker
+
+shared/
+ components
+ models
+ services
+ maps
+```
+
+If separate apps create unnecessary complexity, implement role-based routes inside one Angular application.
+
+Prioritize completion over architectural purity.
+
+---
+
+# 31. MAP
+
+Use Leaflet/OpenStreetMap or another free map solution.
+
+Support:
+
+- incident markers
+- user location
+- POIs
+- marker clustering
+- priority representation
+- incident popup
+- hotspots
+- zones
+
+Do NOT depend on expensive map APIs.
+
+---
+
+# 32. API DESIGN
+
+Implement REST APIs.
+
+Examples:
+
+```text
+POST   /api/auth/login
+POST   /api/auth/register
+
+POST   /api/observations/analyze
+POST   /api/observations
+
+GET    /api/incidents/nearby
+GET    /api/incidents/{id}
+GET    /api/incidents
+POST   /api/incidents/{id}/confirm
+
+GET    /api/incidents/{id}/matches
+
+POST   /api/incidents/{id}/assign
+POST   /api/incidents/{id}/status
+
+POST   /api/incidents/{id}/resolution
+POST   /api/incidents/{id}/verify
+
+GET    /api/dashboard/summary
+GET    /api/dashboard/hotspots
+GET    /api/dashboard/recurring
+GET    /api/dashboard/disputed
+
+GET    /api/zones
+GET    /api/zones/{id}/health
+
+GET    /api/users/me/contributions
+GET    /api/users/me/trust
+```
+
+Generate Swagger documentation.
+
+---
+
+# 33. API RESPONSE DESIGN
+
+Use consistent envelope.
+
+Example:
+
+```json
+{
+  "success": true,
+  "data": {},
+  "error": null,
+  "correlationId": "..."
+}
+```
+
+Errors must be human-readable.
+
+---
+
+# 34. SECURITY
+
+Implement reasonable hackathon security:
+
+- JWT authentication
+- role-based authorization
+- password hashing
+- input validation
+- upload file type validation
+- upload size limit
+- rate limiting
+- audit trail
+- prevent unauthorized status changes
+- do not expose internal file paths
+
+Do not spend hackathon time implementing enterprise security beyond reasonable MVP requirements.
+
+---
+
+# 35. PRIVACY
+
+Do NOT expose exact citizen identity publicly.
+
+Public incident page should display:
+
+```text
+5 Citizen Observations
+```
+
+not citizen names.
+
+Strip unnecessary image metadata where feasible.
+
+Do not expose sensitive user information on maps.
+
+---
+
+# 36. EXPLAINABLE AI
+
+Every AI-derived decision should have:
+
+```text
+Result
+Confidence
+Reason
+```
+
+Example:
+
+```text
+Priority:
+CRITICAL
+
+Reason:
+• High severity
+• Multiple independent observations
+• School within 72m
+• Recurring issue
+```
+
+The jury must be able to understand why the system made a decision.
+
+---
+
+# 37. HUMAN-IN-THE-LOOP
+
+Never let AI become absolute authority.
+
+Provide override for:
+
+- issue category
+- severity
+- duplicate match
+- incident merge
+- resolution verification
+
+Store overrides in audit trail.
+
+---
+
+# 38. EDGE CASES
+
+Handle:
+
+- location permission denied
+- camera permission denied
+- no GPS available
+- upload fails
+- unsupported image
+- image too large
+- AI unavailable
+- low AI confidence
+- no duplicate found
+- multiple possible duplicates
+- incorrect duplicate suggestion
+- offline/network failure
+- citizen changes category
+- incident already resolved
+- resolved incident receives new observation
+- reopened issue
+- worker unavailable
+- invalid state transition
+- citizen votes conflict
+- no citizens verify resolution
+- resolution AI unavailable
+- duplicate image
+- observation far from reported location
+- multiple incidents at same location but different categories
+- same category nearby but clearly separate physical issue
+- recurring issue after long time
+- authority override
+- worker uploads same before/after image
+- malicious user spam
+
+Gracefully handle every case.
+
+---
+
+# 39. DEMO RESILIENCE
+
+This is extremely important.
+
+The jury demo must NEVER depend completely on:
+
+- live AI
+- live geocoding
+- live government API
+- live notification provider
+- live external authentication
+
+Provide fallbacks.
+
+If external AI fails:
+
+`DemoAIProvider`
+
+If map tiles fail:
+
+show cached/list-based incident view where possible.
+
+Seed all important demonstration data.
+
+---
+
+# 40. NOTIFICATIONS
+
+Create notification abstraction.
+
+Events:
+
+- observation accepted
+- observation merged
+- priority changed significantly
+- incident assigned
+- work started
+- work completed
+- verification requested
+- incident resolved
+- incident reopened
+
+For MVP use in-app notifications.
+
+Do NOT require SMS infrastructure.
+
+---
+
+# 41. AUDITABILITY
+
+Every meaningful event should be stored.
+
+Example timeline:
+
+```text
+09:03 Observation submitted
+09:03 AI classified pothole
+09:04 Incident CL-1027 created
+10:21 Second observation merged
+10:21 CPS increased 74 → 86
+10:35 Assigned to Worker
+12:10 Work started
+13:02 Work completed
+13:03 Verification requested
+14:11 Citizen confirmed resolution
+14:12 Incident verified resolved
+```
+
+Display this visually.
+
+---
+
+# 42. VISUAL DESIGN
+
+The product should feel:
+
+- modern
+- civic
+- trustworthy
+- intelligent
+- clean
+- map-centric
+- data-driven
+
+Avoid excessive gradients and gimmicks.
+
+Use strong status hierarchy.
+
+Examples:
+
+```text
+CRITICAL
+HIGH
+MODERATE
+LOW
+
+VERIFIED
+AWAITING VERIFICATION
+DISPUTED
+RECURRING
+```
+
+Create polished empty states, loading states, skeletons, error states and success states.
+
+---
+
+# 43. JURY WOW MOMENTS
+
+Optimize specifically for these moments:
+
+## WOW #1
+
+Upload image → AI immediately recognizes civic problem.
+
+## WOW #2
+
+Second report → system realizes it is probably the same physical incident.
+
+## WOW #3
+
+Priority automatically increases because multiple citizens confirmed it and a school is nearby.
+
+## WOW #4
+
+Map immediately reflects the critical incident.
+
+## WOW #5
+
+Before/after photographs produce verified resolution.
+
+## WOW #6
+
+Show recurring infrastructure history.
+
+## WOW #7
+
+Show possible relationship between water leakage and subsequent road damage.
+
+These moments matter more than building 100 CRUD screens.
+
+---
+
+# 44. DO NOT OVERBUILD
+
+Do NOT implement:
+
+- blockchain
+- cryptocurrency
+- complex microservices
+- Kafka
+- Kubernetes
+- custom computer vision model training
+- complex ML pipelines
+- real government integration
+- payment gateway
+- SMS provider
+- unnecessary social network features
+
+Unless the core MVP is already complete.
+
+The hackathon objective is:
+
+**maximum perceived intelligence with minimum implementation complexity.**
+
+---
+
+# 45. TESTING
+
+Create unit tests for:
+
+- CPS calculation
+- duplicate matching
+- geographic distance
+- recurrence detection
+- status transitions
+- citizen verification calculation
+- Civic Health Score
+- trust score
+
+Create integration tests for:
+
+```text
+Observation → Incident
+Observation → Existing Incident
+Incident → Assignment
+Assignment → Resolution
+Resolution → Verification
+Verification Failure → Review
+```
+
+---
+
+# 46. SEED DATA
+
+Seed a realistic fictional demonstration city area.
+
+Include at least:
+
+- 15 active incidents
+- 10 resolved incidents
+- 3 critical incidents
+- 3 recurring locations
+- 2 disputed resolutions
+- 4 POIs
+- 3 zones
+- 1 hotspot
+- 1 cross-issue correlation
+
+Accounts:
+
+```text
+citizen@civiclens.demo
+authority@civiclens.demo
+worker@civiclens.demo
+```
+
+Use documented demo passwords only in development.
+
+---
+
+# 47. README
+
+Create excellent README containing:
+
+# CivicLens AI
+
+## Problem
+
+## Why existing complaint systems are insufficient
+
+## Solution
+
+## Key Innovation
+
+## Architecture
+
+## Tech Stack
+
+## Setup
+
+## Demo Accounts
+
+## Demo Scenario
+
+## Civic Incident Fingerprint
+
+## Civic Priority Score
+
+## Resolution Verification
+
+## Screenshots
+
+## API Documentation
+
+## Testing
+
+## Future Scope
+
+## Hackathon Pitch
+
+---
+
+# 48. JURY PITCH INSIDE README
+
+Include:
+
+> Existing civic systems primarily manage complaints. CivicLens models the physical problem itself.
+
+And:
+
+> Multiple citizen reports can represent one real-world incident. CivicLens combines spatial context, visual evidence and citizen corroboration to build a continuously evolving representation of that incident.
+
+And the primary closing line:
+
+> Existing systems measure complaints and closures. CivicLens measures real-world incidents and verified resolutions.
+
+---
+
+# 49. FUTURE SCOPE
+
+Clearly separate implemented MVP from future possibilities.
+
+Future possibilities:
+
+- municipal API integration
+- IoT sensor observations
+- CCTV-based issue detection where legally permitted
+- weather correlation
+- predictive infrastructure maintenance
+- road-condition intelligence
+- utility infrastructure integration
+- contractor performance analytics
+- SLA management
+- anonymized open civic datasets
+- multilingual voice reporting
+- accessibility support
+- advanced computer vision
+- infrastructure digital twins
+
+Do NOT pretend future features are already implemented.
+
+---
+
+# 50. SUCCESS CRITERIA
+
+The project is successful when a jury member can understand within approximately 60 seconds:
+
+1. What problem CivicLens solves.
+2. Why it is different from a complaint app.
+3. How multiple observations become one incident.
+4. How incidents are prioritized.
+5. How real resolution is verified.
+
+The application must successfully demonstrate this flow:
+
+```text
+Citizen Observation
+        ↓
+AI Understanding
+        ↓
+Civic Fingerprint
+        ↓
+Incident Matching
+        ↓
+Context Intelligence
+        ↓
+Civic Priority Score
+        ↓
+Authority Action
+        ↓
+Field Resolution
+        ↓
+AI + Citizen Verification
+        ↓
+Verified Resolution
+        ↓
+Infrastructure Memory
+```
+
+---
+
+# 51. DEVELOPMENT PRIORITY
+
+Build in this exact priority.
+
+## P0 — MUST WORK
+
+1. Project setup
+2. Database/PostGIS
+3. Authentication + roles
+4. Citizen observation submission
+5. Image upload
+6. Location
+7. Issue classification abstraction
+8. Incident creation
+9. Nearby incident matching
+10. Citizen duplicate confirmation
+11. Civic Priority Score
+12. Incident detail
+13. Authority dashboard
+14. Map
+15. Assignment
+16. Worker workflow
+17. Resolution evidence
+18. Before/after verification
+19. Citizen verification
+20. Incident timeline
+21. Demo seed data
+22. Demo mode
+
+Do not continue until P0 is stable.
+
+## P1 — WINNING FEATURES
+
+23. Contextual POI risk
+24. Recurrence detection
+25. Disputed resolution
+26. Hotspot detection
+27. Civic Health Score
+28. Infrastructure Memory
+29. Cross-issue correlation
+30. Citizen Trust Score
+
+## P2 — POLISH
+
+31. animations
+32. charts
+33. notification center
+34. loading skeletons
+35. responsive refinement
+36. dashboard polish
+37. demo scenario selector
+
+---
+
+# 52. CODING INSTRUCTIONS
+
+While implementing:
+
+- produce working code, not pseudo-code
+- keep code readable
+- use dependency injection
+- use async APIs
+- keep domain logic out of controllers
+- create reusable scoring services
+- create database migrations
+- provide seed data
+- provide `.env.example`
+- never commit secrets
+- provide Docker Compose for PostgreSQL/PostGIS
+- ensure project can run locally
+- keep setup simple
+- document every external dependency
+- prefer free/open-source dependencies
+- keep AI providers replaceable
+- do not introduce infrastructure without clear benefit
+
+---
+
+# 53. DEVELOPMENT EXECUTION
+
+Do NOT attempt to generate the entire system blindly in one giant change.
+
+First:
+
+1. inspect repository
+2. create implementation plan
+3. create architecture
+4. establish project structure
+5. create database/domain model
+6. implement vertical slices
+7. test each slice
+8. continue automatically
+
+Build vertical slices in this sequence:
+
+```text
+Slice 1
+Citizen → Observation → Incident
+
+Slice 2
+Observation → Duplicate Matching → Existing Incident
+
+Slice 3
+Incident → CPS → Authority Dashboard
+
+Slice 4
+Authority → Assignment → Worker
+
+Slice 5
+Worker → Resolution Evidence → Verification
+
+Slice 6
+Citizen → Resolution Confirmation
+
+Slice 7
+Recurrence + Infrastructure Memory
+
+Slice 8
+Hotspots + Health Score + Correlation
+
+Slice 9
+Demo polish
+```
+
+After every slice:
+
+- build backend
+- run tests
+- build frontend
+- fix compilation errors
+- verify migrations
+- verify workflow
+
+Do not leave broken code while moving to another slice.
+
+---
+
+# 54. FINAL EXPECTATION
+
+The final application should NOT feel like:
+
+> "A student made a pothole complaint application using AI."
+
+It should feel like:
+
+> "A prototype of an intelligent operating layer through which cities can understand physical civic problems, prioritize interventions and verify real-world outcomes."
+
+Every major product and technical decision should reinforce that positioning.
+
+The final demo must leave the jury with one memorable concept:
+
+# ONE REAL-WORLD PROBLEM ≠ MANY COMPLAINTS
+
+and one memorable promise:
+
+# DON'T JUST CLOSE TICKETS. VERIFY OUTCOMES.
+
+Build CivicLens accordingly.
