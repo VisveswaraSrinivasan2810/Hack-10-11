@@ -26,6 +26,7 @@ public static class Envelope
 
     public static async Task WriteAsync(HttpContext ctx, int status, ApiResponse<object?> body)
     {
+        if (ctx.Response.HasStarted) return;
         ctx.Response.StatusCode = status;
         ctx.Response.ContentType = "application/json";
         await ctx.Response.WriteAsync(JsonSerializer.Serialize(body, Json));
@@ -80,7 +81,7 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
     public async Task Invoke(HttpContext ctx)
     {
         var id = ctx.Request.Headers[Header].FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(id) || id.Length > 64) id = Guid.NewGuid().ToString("N");
+        if (string.IsNullOrWhiteSpace(id) || id.Length > 64 || id.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-' && c != '_')) id = Guid.NewGuid().ToString("N");
         ctx.Items[ItemKey] = id;
         ctx.Response.Headers[Header] = id;
         using (Serilog.Context.LogContext.PushProperty("CorrelationId", id)) await next(ctx);
@@ -104,6 +105,11 @@ public sealed class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionM
         {
             // Unique-constraint race (double tap, two devices): the first request won; tell the second one plainly.
             await Envelope.WriteAsync(ctx, 409, Envelope.Fail(ctx, "conflict", "That was already recorded. Please refresh and try again."));
+        }
+        catch (Exception ex) when (ex is Npgsql.PostgresException { SqlState: "40001" or "40P01" }
+            || ex is Microsoft.EntityFrameworkCore.DbUpdateException { InnerException: Npgsql.PostgresException { SqlState: "40001" or "40P01" } })
+        {
+            await Envelope.WriteAsync(ctx, 409, Envelope.Fail(ctx, "conflict", "Another update overlapped this action. Refresh before trying again."));
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
         {

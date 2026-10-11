@@ -26,11 +26,14 @@ public static class ImageCodec
             using var data = SKData.CreateCopy(bytes);
             using var codec = SKCodec.Create(data);
             if (codec is null) return null;
+            if (codec.Info.Width <= 0 || codec.Info.Height <= 0 || (long)codec.Info.Width * codec.Info.Height > 24_000_000)
+                throw new BadRequestException("The photo resolution is too large. Resize to at most 24 megapixels.");
             var origin = codec.EncodedOrigin;
             var bitmap = SKBitmap.Decode(codec, new SKImageInfo(codec.Info.Width, codec.Info.Height, SKColorType.Rgba8888, SKAlphaType.Premul));
             if (bitmap is null) return null;
             return Orient(bitmap, origin);
         }
+        catch (BadRequestException) { throw; }
         catch (Exception)
         {
             return null;

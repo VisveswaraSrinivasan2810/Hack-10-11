@@ -9,12 +9,21 @@ using CivicLens.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+var provisionAuthority = args.Contains("--provision-authority", StringComparer.Ordinal);
+var builder = WebApplication.CreateBuilder(args.Where(a => a != "--provision-authority").ToArray());
+
+if (builder.Configuration.GetValue<bool>("Auth:Disabled") &&
+    (!builder.Environment.IsDevelopment() || !builder.Configuration.GetValue<bool>("DEMO_MODE")))
+    throw new InvalidOperationException("Authentication bypass is allowed only in a Development demo.");
+if (!builder.Environment.IsDevelopment() &&
+    string.Equals(builder.Configuration["Database:Provider"], "InMemory", StringComparison.OrdinalIgnoreCase))
+    throw new InvalidOperationException("Production requires a persistent PostgreSQL/PostGIS database.");
+if (!builder.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Images:AllowUndecodable"))
+    throw new InvalidOperationException("Production cannot accept undecodable images.");
 
 // Local demo needs no database server, cloud account or manually supplied key.
 if (builder.Configuration.GetValue<bool>("DEMO_MODE"))
@@ -42,6 +51,7 @@ builder.Services.AddControllers(o =>
 {
     o.Filters.Add<EnvelopeResultFilter>();
     o.Filters.Add<ValidationFilter>();
+    o.Filters.Add<MutationTransactionFilter>();
 }).ConfigureApiBehaviorOptions(o =>
 {
     o.InvalidModelStateResponseFactory = ctx =>
@@ -54,7 +64,8 @@ builder.Services.AddControllers(o =>
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o => o.MultipartBodyLengthLimit = 20 * 1024 * 1024);
 
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
-if (string.IsNullOrWhiteSpace(jwt.Key) || Encoding.UTF8.GetByteCount(jwt.Key) < 32)
+if ((!builder.Environment.IsDevelopment() && jwt.Key.StartsWith("dev-only-", StringComparison.Ordinal))
+    || string.IsNullOrWhiteSpace(jwt.Key) || Encoding.UTF8.GetByteCount(jwt.Key) < 32)
     throw new InvalidOperationException("Jwt:Key must be set (environment variable Jwt__Key) to a secret of at least 32 characters. See .env.example.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
@@ -69,6 +80,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     o.MapInboundClaims = false;
     o.Events = new JwtBearerEvents
     {
+        OnTokenValidated = async ctx =>
+        {
+            var idText = ctx.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(idText, out var id)) { ctx.Fail("Invalid account."); return; }
+            var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+            var account = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ctx.HttpContext.RequestAborted);
+            if (account is null || !account.IsActive || account.SecurityStamp != ctx.Principal?.FindFirst("security_stamp")?.Value
+                || account.Role.ToString() != ctx.Principal?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)
+                ctx.Fail("This session is no longer valid. Please sign in again.");
+        },
         OnChallenge = async ctx =>
         {
             ctx.HandleResponse();
@@ -125,6 +146,10 @@ app.UseSerilogRequestLogging();
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
+    ctx.Response.Headers["Referrer-Policy"] = "same-origin";
+    if (ctx.Request.Path.StartsWithSegments("/api") || ctx.Request.Path.StartsWithSegments("/uploads"))
+        ctx.Response.Headers.CacheControl = "no-store";
     await next();
 });
 
@@ -132,10 +157,9 @@ var uploadsPath = Path.GetFullPath(builder.Configuration["Storage:Path"] ?? "upl
 Directory.CreateDirectory(uploadsPath);
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(uploadsPath), RequestPath = "/uploads" });
+// Evidence is served by an authenticated controller, never by public static-file middleware.
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
@@ -145,15 +169,40 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapGet("/health/ready", async (AppDbContext db, CancellationToken ct) =>
+    await db.Database.CanConnectAsync(ct) ? Results.Ok(new { ready = true }) : Results.StatusCode(503));
 
 
 // ---------------------------------------------------------------- database + demo data
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (db.Database.IsRelational()) await db.Database.MigrateAsync();
+    if (db.Database.IsRelational())
+    {
+        if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
+            await db.Database.MigrateAsync();
+        else if ((await db.Database.GetPendingMigrationsAsync()).Any())
+            throw new InvalidOperationException("Database migrations must be applied before starting Production. See docs/API_INTEGRATION.md.");
+    }
     else await db.Database.EnsureCreatedAsync();
 
+    if (provisionAuthority)
+    {
+        var email = builder.Configuration["Bootstrap:Email"]?.Trim().ToLowerInvariant();
+        var name = builder.Configuration["Bootstrap:Name"]?.Trim();
+        var password = builder.Configuration["Bootstrap:Password"];
+        if (string.IsNullOrWhiteSpace(email) || email.Length > 160 || !System.Net.Mail.MailAddress.TryCreate(email, out _)
+            || string.IsNullOrWhiteSpace(name) || name.Length > 80
+            || !CivicLens.Application.Services.PasswordRules.IsStrong(password))
+            throw new InvalidOperationException("Provisioning requires valid Bootstrap__Email, Bootstrap__Name and Bootstrap__Password. Supply the password through secure environment settings.");
+        if (await db.Users.AnyAsync(u => u.Role == CivicLens.Domain.UserRole.Authority))
+            throw new InvalidOperationException("An authority already exists. Use the authenticated staff administration API.");
+        var hasher = scope.ServiceProvider.GetRequiredService<CivicLens.Application.Abstractions.IPasswordHasher>();
+        db.Users.Add(new CivicLens.Domain.Entities.User { Name = name, Email = email, PasswordHash = hasher.Hash(password!), Role = CivicLens.Domain.UserRole.Authority });
+        await db.SaveChangesAsync();
+        app.Logger.LogInformation("Initial authority provisioned. Remove Bootstrap variables before starting the server.");
+        return;
+    }
     if (builder.Configuration.GetValue<bool>("DEMO_MODE"))
     {
         var seeded = await scope.ServiceProvider.GetRequiredService<DemoSeeder>().SeedIfEmptyAsync();

@@ -25,7 +25,7 @@ public static class DependencyInjection
             s.AddDbContext<AppDbContext>(o => o.UseNpgsql(cs, npgsql =>
             {
                 npgsql.UseNetTopologySuite();
-                npgsql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                // Transactions cover the entire mutation; never replay a partially completed workflow.
             }));
         }
         s.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
@@ -39,7 +39,7 @@ public static class DependencyInjection
 
         // Image pipeline: decode → fix phone rotation → strip all metadata → cap resolution (storage + AI copies).
         s.Configure<ImageOptions>(config.GetSection("Images"));
-        s.PostConfigure<ImageOptions>(o => { if (config["Images:AllowUndecodable"] is null) o.AllowUndecodable = demoMode; });
+        s.PostConfigure<ImageOptions>(o => { if (config["Images:AllowUndecodable"] is null) o.AllowUndecodable = false; });
         s.AddSingleton<IImageProcessor, SkiaImageProcessor>();
         s.AddSingleton<IImageSimilarityService, ImageSimilarityService>();
 

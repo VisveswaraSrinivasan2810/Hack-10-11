@@ -9,6 +9,7 @@ public class User
     public string Name { get; set; } = "";
     public string Email { get; set; } = "";
     public string PasswordHash { get; set; } = "";
+    public string SecurityStamp { get; set; } = Guid.NewGuid().ToString("N");
     public UserRole Role { get; set; }
     public int TrustScore { get; set; } = TrustScoreCalculator.BaseScore;
     public bool IsActive { get; set; } = true;
@@ -220,5 +221,22 @@ public class Notification
     public string Title { get; set; } = "";
     public string Message { get; set; } = "";
     public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>Social interest vote, separate from evidence confirmation and resolution verification.</summary>
+public class IncidentUpvote
+{
+    public Guid IncidentId { get; set; }
+    public Guid UserId { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public class IncidentComment
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid IncidentId { get; set; }
+    public Guid UserId { get; set; }
+    public string Text { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

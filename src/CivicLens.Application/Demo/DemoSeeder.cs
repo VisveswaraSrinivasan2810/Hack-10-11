@@ -34,6 +34,7 @@ public sealed class DemoSeeder(
     public async Task ResetAsync(CancellationToken ct = default)
     {
         async Task Clear<T>(DbSet<T> set) where T : class { set.RemoveRange(await set.ToListAsync(ct)); await db.SaveChangesAsync(ct); }
+        await Clear(db.IncidentComments); await Clear(db.IncidentUpvotes);
         await Clear(db.Notifications); await Clear(db.CitizenVerifications); await Clear(db.ResolutionEvidence);
         await Clear(db.Correlations); await Clear(db.History); await Clear(db.PriorityBreakdowns); await Clear(db.Assignments);
         await Clear(db.IncidentConfirmations); await Clear(db.IncidentObservations); await Clear(db.Incidents);

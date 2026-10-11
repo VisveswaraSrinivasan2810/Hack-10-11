@@ -1,25 +1,35 @@
-# CivicLens web (prototype)
+# CivicLens web
 
-React + Vite + TypeScript. Runs fully offline on deterministic demo data.
+React + Vite + TypeScript UI connected to the .NET API. There is no local mock incident store. Login, citizen reporting, social activity, operator workflow, resolution checks, city intelligence, notifications and demo scenarios all use API requests.
 
-    npm install && npm run dev      # http://localhost:4200
-    cp .env.example .env            # optionally set VITE_API_BASE_URL (e.g. http://localhost:5000)
+## Run the MVP locally
 
-## Backend integration status
-Inspected `src/CivicLens.Api/Controllers`. Every route except `GET /api/demo/info` requires a JWT (`[Authorize]`), and this prototype deliberately has no auth. So:
-- Live: `GET /api/demo/info` (reachability probe in `src/api.ts`).
-- Demo data: observe/analyze, submit, incidents, assign, status, resolution, verify, dashboard.
-- Backend CORS allows `http://localhost:4200` by default (matches the dev port).
-Role switcher is a local preview, not authentication.
+From the repository root, start the API:
 
-## Backend sync (latest pull)
-New since last inspection: `/api/admin/*` (POI/zone/staff management, Authority-only), `POST /api/account/password`, a `ContextAmplifier` on the priority breakdown, HEIC rejection and a 15 MB image cap, and 409 conflict envelopes. All still require JWT, so only `GET /api/demo/info` is live from this UI. Frontend adaptations: client-side photo checks (JPEG/PNG, not HEIC, ≤ 15 MB), and a "context amplifier" line in the score explanation. Admin and account screens are out of scope (they need auth).
+```sh
+dotnet run --project src/CivicLens.Api --launch-profile Demo
+```
 
-## Hosted demo
+In a second terminal:
 
-Render builds this UI with the committed npm lockfile, then serves it at `/` from
-the .NET container. The feed's votes, comments and workflow previews remain local
-simulations. Use **Open backend-connected workspace** (`/operations.html`) for
-actual API reporting, assignment, resolution and the ten backend demo scenarios.
-The two demo data stores are independent; frontend interactions do not mutate
-backend incidents. No tests were run or added for hosting integration.
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Open the frontend on port 4200. Vite proxies API, evidence and demo illustrations to the API on port 5241. Leave `VITE_API_BASE_URL` empty. Sign in using a demo account button. Role buttons perform real logins; sessions are held in memory and require login after a page reload.
+
+For a separate frontend host, set `VITE_API_BASE_URL` to the HTTPS API origin at build time and add the frontend origin to API `Cors__Origins__0`. Uploaded evidence is fetched with the bearer token and displayed through temporary blob URLs.
+
+## Present in five minutes
+
+1. Citizen: open an incident, upvote and comment, then upload a real JPEG/PNG/WebP to report a new issue. Confirm the category and choose a matching incident or create a separate one.
+2. Authority: open the report, inspect priority reasons and assign an active worker.
+3. Field worker: accept, start work and upload the after-photo.
+4. Citizen: confirm the outcome; work completion and verified resolution are shown separately.
+5. Authority: Demo studio → run scenarios **2 → 3 → 7 → 8**, opening each resulting incident. Show duplicate evidence, school context, verified closure and disputed closure.
+
+Demo AI, illustrations and scenario inputs are explicitly simulated. All records and actions use the backend. InMemory demo data and local uploads are disposable. Reset logs everyone out because account IDs change.
+
+See [API integration and production requirements](../docs/API_INTEGRATION.md). Compilation is checked with `npm run build`; no tests were written or run, as requested.

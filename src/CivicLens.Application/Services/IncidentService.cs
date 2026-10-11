@@ -126,7 +126,7 @@ public sealed class IncidentService(
             "oldest" => query.OrderBy(i => i.FirstObservedAt),
             _ => query.OrderByDescending(i => i.PriorityScore).ThenBy(i => i.FirstObservedAt)
         };
-        var page = Math.Max(1, q.Page);
+        var page = Math.Clamp(q.Page, 1, 1_000_000);
         var size = Math.Clamp(q.PageSize, 1, 500);
         var items = await query.Skip((page - 1) * size).Take(size).ToListAsync(ct);
         return new PagedResult<IncidentSummaryDto>(await SummariesAsync(items, ct), total, page, size);
@@ -150,7 +150,8 @@ public sealed class IncidentService(
 
     public async Task<IReadOnlyList<ObservationPublicDto>> MatchesAsync(Guid id, ICurrentUser user, CancellationToken ct = default)
     {
-        if (!await db.Incidents.AnyAsync(i => i.Id == id, ct)) throw new NotFoundException("Incident not found.");
+        var incident = await db.Incidents.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, ct) ?? throw new NotFoundException("Incident not found.");
+        if (user.Role == UserRole.FieldWorker && incident.AssignedWorkerId != user.Id) throw new ForbiddenException("This incident is not assigned to you.");
         return await (from io in db.IncidentObservations join o in db.Observations on io.ObservationId equals o.Id
                       where io.IncidentId == id orderby o.CreatedAt
                       select new ObservationPublicDto(o.Id, o.ImageUrl, o.CreatedAt, o.CitizenSelectedCategory.ToString(),

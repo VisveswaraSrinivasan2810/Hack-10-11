@@ -24,6 +24,7 @@ public static class DependencyInjection
         s.AddScoped<IncidentLifecycle>();
         s.AddScoped<ObservationService>();
         s.AddScoped<IncidentService>();
+        s.AddScoped<SocialService>();
         s.AddScoped<ResolutionService>();
         s.AddScoped<DashboardService>();
         s.AddScoped<PoiCoverageService>();

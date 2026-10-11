@@ -1,3 +1,5 @@
+> The React MVP is now connected to the API. Start the API with `dotnet run --project src/CivicLens.Api --launch-profile Demo`, then run `npm ci` and `npm run dev` in `frontend`. Open the frontend on port 4200. See [frontend instructions](frontend/README.md) and [API/production requirements](docs/API_INTEGRATION.md). No tests were written or run for this integration.
+
 # CivicLens AI
 ### From Citizen Observation to Verified Resolution
 

@@ -154,3 +154,9 @@ public sealed record DemoScenarioDto(int Id, string Name, string Description);
 public sealed record DemoScenarioResult(int Id, string Name, Guid? IncidentId, string? IncidentCode, string Summary, IReadOnlyList<string> Highlights);
 
 public sealed record ResolutionQueueItemDto(IncidentSummaryDto Summary, ResolutionDto? Resolution);
+
+public sealed record FeedItemDto(IncidentSummaryDto Summary, int Votes, bool Voted, int CommentCount, IReadOnlyList<string> Fixers);
+public sealed record CommentDto(Guid Id, string AuthorLabel, string Text, DateTime CreatedAt, bool CanDelete);
+public sealed record SocialDto(int Votes, bool Voted, int CommentCount, PagedResult<CommentDto> Comments);
+public sealed record UpvoteRequest(bool Active);
+public sealed record CommentRequest(string Text);

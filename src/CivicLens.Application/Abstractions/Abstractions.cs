@@ -7,6 +7,8 @@ namespace CivicLens.Application.Abstractions;
 
 public interface IAppDbContext
 {
+    DbSet<IncidentUpvote> IncidentUpvotes { get; }
+    DbSet<IncidentComment> IncidentComments { get; }
     DbSet<User> Users { get; }
     DbSet<Observation> Observations { get; }
     DbSet<ObservationDraft> ObservationDrafts { get; }

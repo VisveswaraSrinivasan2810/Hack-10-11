@@ -43,6 +43,7 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider c
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim("security_stamp", user.SecurityStamp),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),

@@ -125,6 +125,7 @@ public sealed class UserService(IAppDbContext db, TrustService trust)
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct) ?? throw new NotFoundException("User not found.");
         if (!hasher.Verify(current, user.PasswordHash)) throw new BadRequestException("Your current password is incorrect.", "wrong_password");
         user.PasswordHash = hasher.Hash(next);
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
         await db.SaveChangesAsync(ct);
     }
     public async Task<IReadOnlyList<NotificationDto>> NotificationsAsync(Guid userId, CancellationToken ct = default) =>

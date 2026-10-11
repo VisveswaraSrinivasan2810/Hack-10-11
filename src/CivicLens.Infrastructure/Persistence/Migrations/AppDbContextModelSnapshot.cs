@@ -189,6 +189,35 @@ namespace CivicLens.Infrastructure.Persistence.Migrations
                     b.ToTable("Assignments");
                 });
 
+            modelBuilder.Entity("CivicLens.Domain.Entities.IncidentComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("IncidentId", "CreatedAt", "Id");
+
+                    b.ToTable("IncidentComments");
+                });
+
             modelBuilder.Entity("CivicLens.Domain.Entities.IncidentConfirmation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -273,6 +302,24 @@ namespace CivicLens.Infrastructure.Persistence.Migrations
                     b.HasIndex("ObservationId");
 
                     b.ToTable("IncidentObservations");
+                });
+
+            modelBuilder.Entity("CivicLens.Domain.Entities.IncidentUpvote", b =>
+                {
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("IncidentId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("IncidentUpvotes");
                 });
 
             modelBuilder.Entity("CivicLens.Domain.Entities.Notification", b =>
@@ -650,6 +697,10 @@ namespace CivicLens.Infrastructure.Persistence.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
+                    b.Property<string>("SecurityStamp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("TrustScore")
                         .HasColumnType("integer");
 
@@ -707,6 +758,21 @@ namespace CivicLens.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CivicLens.Domain.Entities.IncidentComment", b =>
+                {
+                    b.HasOne("CivicLens.Domain.Entities.CivicIncident", null)
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CivicLens.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CivicLens.Domain.Entities.IncidentConfirmation", b =>
                 {
                     b.HasOne("CivicLens.Domain.Entities.CivicIncident", null)
@@ -736,6 +802,21 @@ namespace CivicLens.Infrastructure.Persistence.Migrations
                     b.HasOne("CivicLens.Domain.Entities.Observation", null)
                         .WithMany()
                         .HasForeignKey("ObservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CivicLens.Domain.Entities.IncidentUpvote", b =>
+                {
+                    b.HasOne("CivicLens.Domain.Entities.CivicIncident", null)
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CivicLens.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

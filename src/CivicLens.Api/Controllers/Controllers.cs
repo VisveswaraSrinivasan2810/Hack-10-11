@@ -20,7 +20,7 @@ public abstract class ApiControllerBase : ControllerBase
     protected static async Task<ImageUpload> ReadImageAsync(IFormFile? file, string field = "image")
     {
         if (file is null || file.Length == 0) throw new BadRequestException($"Please attach a photo ({field}).", "image_required");
-        if (file.Length > ImageTools.MaxBytes) throw new BadRequestException("The image is too large. Please upload a photo under 8 MB.", "image_too_large");
+        if (file.Length > ImageTools.MaxBytes) throw new BadRequestException("The image is too large. Please upload a photo under 15 MB.", "image_too_large");
         using var ms = new MemoryStream((int)file.Length);
         await file.CopyToAsync(ms);
         return new ImageUpload(ms.ToArray(), file.FileName, file.ContentType);

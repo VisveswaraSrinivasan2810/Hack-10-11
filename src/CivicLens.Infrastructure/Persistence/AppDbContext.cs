@@ -7,6 +7,8 @@ namespace CivicLens.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IAppDbContext
 {
+    public DbSet<IncidentUpvote> IncidentUpvotes => Set<IncidentUpvote>();
+    public DbSet<IncidentComment> IncidentComments => Set<IncidentComment>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Observation> Observations => Set<Observation>();
     public DbSet<ObservationDraft> ObservationDrafts => Set<ObservationDraft>();
@@ -26,6 +28,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.HasPostgresExtension("postgis");
+        b.Entity<IncidentUpvote>(e =>
+        {
+            e.HasKey(x => new { x.IncidentId, x.UserId });
+            e.HasOne<CivicIncident>().WithMany().HasForeignKey(x => x.IncidentId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        b.Entity<IncidentComment>(e =>
+        {
+            e.Property(x => x.Text).HasMaxLength(1000);
+            e.HasIndex(x => new { x.IncidentId, x.CreatedAt, x.Id });
+            e.HasIndex(x => new { x.UserId, x.CreatedAt });
+            e.HasOne<CivicIncident>().WithMany().HasForeignKey(x => x.IncidentId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         b.Entity<User>(e =>
         {

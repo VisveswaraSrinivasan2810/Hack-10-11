@@ -154,6 +154,7 @@ public sealed class AdminService(IAppDbContext db, PoiCoverageService poiCoverag
         if (actor.Id == id && !active) throw new BadRequestException("You cannot deactivate your own account.");
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct) ?? throw new NotFoundException("User not found.");
         user.IsActive = active;
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
         await db.SaveChangesAsync(ct);
         return ToDto(user);
     }
@@ -202,6 +203,6 @@ public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePas
 
 public static class PasswordRules
 {
-    public const string Message = "Password must be 8-100 characters and contain at least one letter and one digit.";
-    public static bool IsStrong(string? p) => p is { Length: >= 8 and <= 100 } && p.Any(char.IsLetter) && p.Any(char.IsDigit);
+    public const string Message = "Password must be 8-72 UTF-8 bytes and contain at least one letter and one digit.";
+    public static bool IsStrong(string? p) => p is { Length: >= 8 } && System.Text.Encoding.UTF8.GetByteCount(p) <= 72 && p.Any(char.IsLetter) && p.Any(char.IsDigit);
 }
