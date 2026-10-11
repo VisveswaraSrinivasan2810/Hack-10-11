@@ -101,6 +101,7 @@ builder.Services.AddSwaggerGen(o =>
         [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }] = []
     });
     o.SupportNonNullableReferenceTypes();
+    if (builder.Configuration.GetValue("Auth:Disabled", false)) o.OperationFilter<DemoUserHeaderFilter>();
 });
 
 builder.Services.AddHealthChecks();
@@ -128,6 +129,7 @@ app.UseSwaggerUI();
 app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
+if (builder.Configuration.GetValue("Auth:Disabled", false)) { app.UseDemoNoAuth(); app.Logger.LogWarning("Auth:Disabled=true — the API is OPEN (no login needed). Set Auth:Disabled=false to enforce authorization."); }
 app.UseAuthorization();
 
 app.MapControllers();

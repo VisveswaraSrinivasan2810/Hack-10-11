@@ -115,9 +115,15 @@ dotnet test        # 117 tests: unit (scoring, matching, geo, recurrence, state 
 ```
 Integration tests boot the real API on an EF InMemory database.
 
-## Real AI provider (optional)
+## Uploading any photo (MVP flow)
 
-`AI__Provider=Claude`, `AI__ApiKey=…` (or `ANTHROPIC_API_KEY`), `AI__Model` (default `claude-opus-5-5`; a cheaper vision model can be set here). Any failure falls back to the demo provider.
+The MVP is upload-based (`POST /api/observations/analyze`, multipart). Any JPEG/PNG/WebP up to 15 MB works: the server fixes phone rotation, strips all metadata (including GPS), downsizes it, and compares photos with a real perceptual thumbnail similarity.
+
+* **No API key (default for a demo):** the demo classifier recognises photos by **file name** (`pothole.jpg`, `garbage.jpg`, …). A photo with an unrecognised name (e.g. `IMG_1234.jpg`) returns *low confidence* and the user simply picks the category: that flow is built in.
+* **With a Claude key:** set `ANTHROPIC_API_KEY` (or `AI__ApiKey`) and any real photo is classified by Claude vision automatically (`AI__Provider=Auto` is the default; `AI__Model` defaults to `claude-opus-5-5` and can be set to a cheaper vision model). In `DEMO_MODE` a failed call falls back to the demo classifier; otherwise the user chooses the category.
+* **Outside the demo city:** the first report in an area with no known places imports schools/hospitals/bus stops from OpenStreetMap (disabled in `DEMO_MODE`, which stays fully offline). Authorities can also manage places, zones and staff accounts under `/api/admin/*`.
+
+Not part of this MVP: deployment hardening, a real PostgreSQL run, the Angular UI (see PROGRESS.md).
 
 ## Future Scope (not implemented)
 

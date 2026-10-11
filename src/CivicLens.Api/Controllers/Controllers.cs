@@ -64,7 +64,8 @@ public sealed class ObservationsController(ObservationService observations, ICur
     {
         var image = await ReadImageAsync(form.Image);
         return await observations.AnalyzeAsync(UserId(user),
-            new AnalyzeRequest(image, form.Latitude, form.Longitude, form.Description, form.DeviceLatitude, form.DeviceLongitude, form.LocationLabel), ct);
+            new AnalyzeRequest(image, form.Latitude, form.Longitude, form.Description,
+                form is { DeviceLatitude: 0, DeviceLongitude: 0 } ? null : form.DeviceLatitude, form is { DeviceLatitude: 0, DeviceLongitude: 0 } ? null : form.DeviceLongitude, form.LocationLabel), ct);
     }
 
     /// <summary>SUBMIT: create a new incident or attach to an existing one (human decision is always final).</summary>
