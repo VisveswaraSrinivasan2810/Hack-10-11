@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CivicLens.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+94b8b520ad774d8d6841d6977888ea3093595e30")]
 [assembly: System.Reflection.AssemblyProductAttribute("CivicLens.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CivicLens.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

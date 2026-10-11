@@ -123,7 +123,9 @@ public sealed record RecurringLocationDto(
     IReadOnlyList<MemoryItemDto> Timeline, bool HasActiveIncident);
 
 public sealed record ZoneDto(Guid Id, string Name, double CenterLatitude, double CenterLongitude, double HealthScore, string HealthLabel,
-    IReadOnlyList<(double Lat, double Lon)> Boundary);
+    IReadOnlyList<LatLonDto> Boundary);
+
+public sealed record LatLonDto(double Lat, double Lon);
 
 public sealed record ZoneHealthDto(
     Guid ZoneId, string Name, double Score, string Label, int ActiveIncidents, int CriticalIncidents, int RecurringIncidents,
@@ -150,3 +152,5 @@ public sealed record NotificationDto(Guid Id, string EventType, string Title, st
 // ---------- Demo ----------
 public sealed record DemoScenarioDto(int Id, string Name, string Description);
 public sealed record DemoScenarioResult(int Id, string Name, Guid? IncidentId, string? IncidentCode, string Summary, IReadOnlyList<string> Highlights);
+
+public sealed record ResolutionQueueItemDto(IncidentSummaryDto Summary, ResolutionDto? Resolution);

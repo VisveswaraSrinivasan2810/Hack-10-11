@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "C81KxIpsLn58hPkRsUJWYc/+jNBU8IddHoGxxtIAa6E=",
+  "Source": "CivicLens.Api",
+  "BasePath": "_content/CivicLens.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

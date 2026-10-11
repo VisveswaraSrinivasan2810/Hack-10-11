@@ -13,3 +13,4 @@ C:\Hack\src\CivicLens.Application\obj\Debug\net8.0\CivicLens.Application.dll
 C:\Hack\src\CivicLens.Application\obj\Debug\net8.0\refint\CivicLens.Application.dll
 C:\Hack\src\CivicLens.Application\obj\Debug\net8.0\CivicLens.Application.pdb
 C:\Hack\src\CivicLens.Application\obj\Debug\net8.0\ref\CivicLens.Application.dll
+C:\Hack\src\CivicLens.Application\obj\Debug\net8.0\CivicLens.Application.sourcelink.json
